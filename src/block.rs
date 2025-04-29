@@ -3,6 +3,8 @@ use crypto::digest::Digest;
 use crypto::sha2::Sha256;
 use log::info;
 
+pub type Result<T> = std::result::Result<T, failure::Error>;
+
 const TARGET_LEN: usize = 4;
 
 pub struct Block {
