@@ -1,7 +1,8 @@
-use std::time::SystemTime;
 use crypto::digest::Digest;
 use crypto::sha2::Sha256;
 use log::info;
+use core::ffi::c_str::Bytes;
+use std::time::SystemTime;
 
 pub type Result<T> = std::result::Result<T, failure::Error>;
 
@@ -57,7 +58,16 @@ impl Block {
             TARGET_LEN,
             self.nonce,
         );
-        let bytes = bincode::serialize(&content)?;
+        let mut bytes: Vec<u8> = content
+            .0
+            .as_bytes()
+            .iter()
+            .chain(content.1.as_bytes().iter())
+            .chain(content.2.to_ne_bytes().iter())
+            .chain(content.3.to_ne_bytes().iter())
+            .chain(content.4.to_ne_bytes().iter())
+            .copied()
+            .collect();
         Ok(bytes)
     }
 
@@ -78,7 +88,7 @@ impl Blockchain {
             blocks: vec![Block::new_genesis_block()],
         }
     }
-    
+
     pub fn add_block(&mut self, data: String) -> Result<()> {
         let prev = self.blocks.last().unwrap();
         let new_block = Block::new(data, prev.get_hash(), TARGET_LEN)?;
