@@ -1,3 +1,8 @@
+use std::time::SystemTime;
+use crypto::digest::Digest;
+use crypto::sha2::Sha256;
+use log::info;
+
 pub struct Block {
     timestamp: u128,
     transactions: String,
