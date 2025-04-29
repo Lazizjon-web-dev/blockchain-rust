@@ -3,6 +3,8 @@ use crypto::digest::Digest;
 use crypto::sha2::Sha256;
 use log::info;
 
+const TARGET_LEN: usize = 4;
+
 pub struct Block {
     timestamp: u128,
     transactions: String,
