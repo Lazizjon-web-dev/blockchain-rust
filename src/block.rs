@@ -1,7 +1,6 @@
 use crypto::digest::Digest;
 use crypto::sha2::Sha256;
 use log::info;
-use core::ffi::c_str::Bytes;
 use std::time::SystemTime;
 
 pub type Result<T> = std::result::Result<T, failure::Error>;
