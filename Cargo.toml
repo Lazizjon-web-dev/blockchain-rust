@@ -4,3 +4,16 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+sha2 = "*"
+rust-crypto = "*"
+bincode = "*"
+failure = "*"
+sled = "*"
+log = "*"
+env_logger = "*"
+clap = "*"
+bitcoincash-addr = "*"
+rand = "*"
+merkle-cbt = "*"
+serde = { version = "*", features = ["derive"] }
+serde_json = "*"
