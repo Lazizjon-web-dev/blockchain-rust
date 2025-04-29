@@ -43,7 +43,7 @@ impl Block {
         while !self.validate()? {
             self.nonce += 1;
         }
-        let data = self.prepare_hash_data();
+        let data = self.prepare_hash_data().unwrap();
         let mut hasher = Sha256::new();
         hasher.input(&data[..]);
         self.hash = hasher.result_str();
@@ -78,7 +78,7 @@ impl Block {
         let mut vec1: Vec<u8> = vec![];
         vec1.resize(TARGET_LEN, 0 as u8);
         println!("vec1: {:?}", vec1);
-        Ok(&hasher.result_str()[0..TARGET_LEN] == String::from_utf8(&vec1[..])?)
+        Ok(&hasher.result_str()[0..TARGET_LEN] == String::from_utf8(vec1)?)
     }
 }
 
