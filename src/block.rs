@@ -37,6 +37,10 @@ impl Block {
         Ok(block)
     }
 
+    pub fn get_hash(&self) -> String {
+        self.hash.clone()
+    }
+
     fn run_proof_of_work(&mut self) -> Result<()> {
         info!("Mining the block");
         while !self.validate()? {
