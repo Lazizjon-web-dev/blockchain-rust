@@ -37,6 +37,17 @@ impl Block {
         Ok(block)
     }
 
+    pub fn new_genesis_block() -> Self {
+        Block {
+            timestamp: 0,
+            transactions: String::from("Genesis Block"),
+            prev_block_hash: String::from("0"),
+            hash: String::from("0"),
+            height: 0,
+            nonce: 0,
+        }
+    }
+
     pub fn get_hash(&self) -> String {
         self.hash.clone()
     }
