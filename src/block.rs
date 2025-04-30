@@ -2,8 +2,7 @@ use crypto::digest::Digest;
 use crypto::sha2::Sha256;
 use log::info;
 use std::time::SystemTime;
-
-pub type Result<T> = std::result::Result<T, failure::Error>;
+use crate::error::Result;
 
 const TARGET_LEN: usize = 4;
 
