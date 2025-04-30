@@ -53,6 +53,22 @@ impl Block {
             .collect::<Vec<u8>>()
     }
 
+    pub fn deserialize(data: &[u8]) -> Result<Self> {
+        let prev_block_hash = String::from_utf8(data[0..32].to_vec())?;
+        let transactions = String::from_utf8(data[32..64].to_vec())?;
+        let timestamp = u128::from_ne_bytes(data[64..80].try_into().unwrap());
+        let height = usize::from_ne_bytes(data[80..88].try_into().unwrap());
+        let nonce = i32::from_ne_bytes(data[88..92].try_into().unwrap());
+        Ok(Block {
+            timestamp,
+            transactions,
+            prev_block_hash,
+            hash: String::new(),
+            height,
+            nonce,
+        })
+    }
+
     fn run_proof_of_work(&mut self) -> Result<()> {
         info!("Mining the block");
         while !self.validate()? {
