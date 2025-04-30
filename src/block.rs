@@ -42,6 +42,10 @@ impl Block {
         self.hash.clone()
     }
 
+    pub fn get_prev_hash(&self) -> String {
+        self.prev_block_hash.clone()
+    }
+
     pub fn serialize(&self) -> Vec<u8> {
         self.prev_block_hash.as_bytes()
             .iter()
