@@ -42,6 +42,17 @@ impl Block {
         self.hash.clone()
     }
 
+    pub fn serialize(&self) -> Vec<u8> {
+        self.prev_block_hash.as_bytes()
+            .iter()
+            .chain(self.transactions.as_bytes().iter())
+            .chain(self.timestamp.to_ne_bytes().iter())
+            .chain(self.height.to_ne_bytes().iter())
+            .chain(self.nonce.to_ne_bytes().iter())
+            .copied()
+            .collect::<Vec<u8>>()
+    }
+
     fn run_proof_of_work(&mut self) -> Result<()> {
         info!("Mining the block");
         while !self.validate()? {
