@@ -17,3 +17,4 @@ rand = "0.3.23"
 merkle-cbt = "0.3.2"
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
+rustyline = "15.0.0"
