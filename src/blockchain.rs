@@ -1,5 +1,5 @@
 use crate::error::Result;
-use crate::block::Block;
+use crate::block::{Block, TARGET_LEN};
 
 #[derive(Debug)]
 pub struct Blockchain {

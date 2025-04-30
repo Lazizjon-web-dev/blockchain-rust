@@ -4,7 +4,7 @@ use log::info;
 use std::time::SystemTime;
 use crate::error::Result;
 
-const TARGET_LEN: usize = 4;
+pub const TARGET_LEN: usize = 4;
 
 #[derive(Debug, Clone)]
 pub struct Block {
