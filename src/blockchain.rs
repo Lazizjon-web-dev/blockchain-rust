@@ -1,21 +1,45 @@
 use crate::error::Result;
 use crate::block::{Block, TARGET_LEN};
+use sled::{self, Db};
 
 #[derive(Debug)]
 pub struct Blockchain {
-    blocks: Vec<Block>,
+    current_hash: String,
+    db: sled::Db,
 }
+
 impl Blockchain {
-    pub fn new() -> Self {
-        Blockchain {
-            blocks: vec![Block::new_genesis_block()],
+    pub fn new() -> Result<Self> {
+        let db: Db = sled::open("data/blocks")?;
+        match db.get("LAST")? {
+            Some(hash) => {
+                let last_hash = String::from_utf8(hash.to_vec())?;
+                Ok(Blockchain {
+                    current_hash: last_hash,
+                    db,
+                })
+            }
+            None=> {
+                let block = Block::new_genesis_block();
+                db.insert(block.get_hash(), block.serialize())?;
+                db.insert("LAST", block.get_hash().as_bytes())?;
+                let bc = Blockchain {
+                    current_hash: block.get_hash(),
+                    db,
+                };
+                bc.db.flush()?;
+                Ok(bc)
+            }
         }
     }
 
     pub fn add_block(&mut self, data: String) -> Result<()> {
-        let prev = self.blocks.last().unwrap();
-        let new_block = Block::new(data, prev.get_hash(), TARGET_LEN)?;
-        self.blocks.push(new_block);
+        let last_hash = self.db.get("LAST")?.unwrap();
+        let last_hash = String::from_utf8(last_hash.to_vec())?;
+        let new_block = Block::new(data, last_hash, TARGET_LEN)?;
+        self.db.insert(new_block.get_hash(), new_block.serialize())?;
+        self.db.insert("LAST", new_block.get_hash().as_bytes())?;
+        self.current_hash = new_block.get_hash();
         Ok(())
     }
 }
