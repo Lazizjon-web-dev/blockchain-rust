@@ -40,14 +40,8 @@ impl Block {
     }
 
     pub fn new_genesis_block() -> Self {
-        Block {
-            timestamp: 0,
-            transactions: String::from("Genesis Block"),
-            prev_block_hash: String::from("0"),
-            hash: String::from("0"),
-            height: 0,
-            nonce: 0,
-        }
+        Block::new(String::from("Genesis Block"), String::new(), 0)
+            .unwrap_or_else(|_| panic!("Failed to create genesis block"))
     }
 
     pub fn get_hash(&self) -> String {
