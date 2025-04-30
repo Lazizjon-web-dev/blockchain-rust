@@ -7,6 +7,7 @@ pub type Result<T> = std::result::Result<T, failure::Error>;
 
 const TARGET_LEN: usize = 4;
 
+#[derive(Debug, Clone)]
 pub struct Block {
     timestamp: u128,
     transactions: String,
@@ -16,6 +17,7 @@ pub struct Block {
     nonce: i32,
 }
 
+#[derive(Debug)]
 pub struct Blockchain {
     blocks: Vec<Block>,
 }
