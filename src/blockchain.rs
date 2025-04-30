@@ -8,6 +8,11 @@ pub struct Blockchain {
     db: sled::Db,
 }
 
+pub struct BlockchainIterator<'a> {
+    current_hash: String,
+    bc: &'a Blockchain,
+}
+
 impl Blockchain {
     pub fn new() -> Result<Self> {
         let db: Db = sled::open("data/blocks")?;
@@ -41,5 +46,26 @@ impl Blockchain {
         self.db.insert("LAST", new_block.get_hash().as_bytes())?;
         self.current_hash = new_block.get_hash();
         Ok(())
+    }
+}
+
+impl<'a> Iterator for BlockchainIterator<'a> {
+    type Item = Block;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Ok(encode_block) = self.bc.db.get(&self.current_hash) {
+            return match encode_block {
+                Some(encode_block) => {
+                    if let Ok(block) = Block::deserialize(&encode_block) {
+                        self.current_hash = block.get_prev_hash();
+                        Some(block)
+                    } else {
+                        None
+                    }
+                }
+                None => None
+            };
+        }
+        None
     }
 }
