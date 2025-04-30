@@ -2,7 +2,7 @@ use crate::error::Result;
 use crate::block::{Block, TARGET_LEN};
 use sled::{self, Db};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Blockchain {
     current_hash: String,
     db: sled::Db,
@@ -46,6 +46,13 @@ impl Blockchain {
         self.db.insert("LAST", new_block.get_hash().as_bytes())?;
         self.current_hash = new_block.get_hash();
         Ok(())
+    }
+
+    pub fn iter(&self) -> BlockchainIterator {
+        BlockchainIterator {
+            current_hash: self.current_hash.clone(),
+            bc: &self,
+        }
     }
 }
 
