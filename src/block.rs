@@ -16,11 +16,6 @@ pub struct Block {
     nonce: i32,
 }
 
-#[derive(Debug)]
-pub struct Blockchain {
-    blocks: Vec<Block>,
-}
-
 impl Block {
     pub fn new(data: String, prev_block_hash: String, height: usize) -> Result<Self> {
         let timestamp = SystemTime::now()
@@ -88,20 +83,5 @@ impl Block {
         vec1.resize(TARGET_LEN, 0 as u8);
         println!("vec1: {:?}", vec1);
         Ok(&hasher.result_str()[0..TARGET_LEN] == String::from_utf8(vec1)?)
-    }
-}
-
-impl Blockchain {
-    pub fn new() -> Self {
-        Blockchain {
-            blocks: vec![Block::new_genesis_block()],
-        }
-    }
-
-    pub fn add_block(&mut self, data: String) -> Result<()> {
-        let prev = self.blocks.last().unwrap();
-        let new_block = Block::new(data, prev.get_hash(), TARGET_LEN)?;
-        self.blocks.push(new_block);
-        Ok(())
     }
 }
