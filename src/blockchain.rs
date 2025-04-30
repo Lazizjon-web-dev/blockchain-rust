@@ -76,3 +76,20 @@ impl<'a> Iterator for BlockchainIterator<'a> {
         None
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    #[test]
+    fn test_add_block() {
+        let mut bc = Blockchain::new().unwrap();
+        bc.add_block("data 1".to_string()).unwrap();
+        bc.add_block("data 2".to_string()).unwrap();
+        bc.add_block("data 3".to_string()).unwrap();
+
+        for item in bc.iter() {
+            println!("item {:?}", item);
+        }
+    }
+}
