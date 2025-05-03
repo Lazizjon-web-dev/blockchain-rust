@@ -40,4 +40,12 @@ impl Transaction {
         tx.set_id()?;
         Ok(tx)
     }
+
+    fn set_id(&mut self) -> Result<()> {
+        let mut hasher = Sha256::new();
+        let data = self.serialize()?;
+        hasher.input(&data);
+        self.id = hasher.result_str();
+        Ok(())
+    }
 }
