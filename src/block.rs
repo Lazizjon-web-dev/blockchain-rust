@@ -66,16 +66,7 @@ impl Block {
             TARGET_LEN,
             self.nonce,
         );
-        let mut bytes: Vec<u8> = content
-            .0
-            .as_bytes()
-            .iter()
-            .chain(content.1.as_bytes().iter())
-            .chain(content.2.to_ne_bytes().iter())
-            .chain(content.3.to_ne_bytes().iter())
-            .chain(content.4.to_ne_bytes().iter())
-            .copied()
-            .collect();
+        let mut bytes: Vec<u8> = bincode::serialize(&content)?;
         Ok(bytes)
     }
 
