@@ -2,7 +2,7 @@ use crypto::digest::Digest;
 use crypto::sha2::Sha256;
 use log::info;
 use std::time::SystemTime;
-use crate::error::Result;
+use crate::{error::Result, transaction::Transaction};
 use serde::{Serialize, Deserialize};
 
 pub const TARGET_LEN: usize = 4;
@@ -10,7 +10,7 @@ pub const TARGET_LEN: usize = 4;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Block {
     timestamp: u128,
-    transactions: String,
+    transactions: Vec<Transaction>,
     prev_block_hash: String,
     hash: String,
     height: usize,
@@ -18,7 +18,7 @@ pub struct Block {
 }
 
 impl Block {
-    pub fn new(data: String, prev_block_hash: String, height: usize) -> Result<Self> {
+    pub fn new(data: Vec<Transaction>, prev_block_hash: String, height: usize) -> Result<Self> {
         let timestamp = SystemTime::now()
             .duration_since(SystemTime::UNIX_EPOCH)?
             .as_millis();
@@ -34,8 +34,8 @@ impl Block {
         Ok(block)
     }
 
-    pub fn new_genesis_block() -> Self {
-        Block::new(String::from("Genesis Block"), String::new(), 0)
+    pub fn new_genesis_block(coinbase: Transaction) -> Self {
+        Block::new( vec![coinbase], String::new(), 0)
             .unwrap_or_else(|_| panic!("Failed to create genesis block"))
     }
 
