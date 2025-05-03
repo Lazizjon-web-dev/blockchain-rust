@@ -8,8 +8,8 @@ pub struct Transaction {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TXInput {
     pub txid: String,
-    pub value: i32,
-    pub script_pub_key: String,
+    pub vout: i32,
+    pub script_sig: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
