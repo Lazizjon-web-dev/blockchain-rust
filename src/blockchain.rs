@@ -1,5 +1,7 @@
-use crate::error::Result;
 use crate::block::{Block, TARGET_LEN};
+use crate::error::Result;
+use crate::transaction::Transaction;
+use log::info;
 use sled::{self, Db};
 
 #[derive(Debug, Clone)]
@@ -15,27 +17,36 @@ pub struct BlockchainIterator<'a> {
 
 impl Blockchain {
     pub fn new() -> Result<Self> {
+        info!("Opening blockchain");
+
         let db: Db = sled::open("data/blocks")?;
-        match db.get("LAST")? {
-            Some(hash) => {
-                let last_hash = String::from_utf8(hash.to_vec())?;
-                Ok(Blockchain {
-                    current_hash: last_hash,
-                    db,
-                })
-            }
-            None=> {
-                let block = Block::new_genesis_block();
-                db.insert(block.get_hash(), bincode::serialize(&block)?)?;
-                db.insert("LAST", block.get_hash().as_bytes())?;
-                let bc = Blockchain {
-                    current_hash: block.get_hash(),
-                    db,
-                };
-                bc.db.flush()?;
-                Ok(bc)
-            }
-        }
+        let hash = db
+            .get("LAST")?
+            .expect("Must create a new block database first");
+        info!("Found block database");
+
+        let last_hash = String::from_utf8(hash.to_vec())?;
+        Ok(Blockchain {
+            current_hash: last_hash,
+            db,
+        })
+    }
+
+    pub fn create_blockchain(address: String) -> Result<Self> {
+        info!("Creating blockchain");
+        let db: Db = sled::open("data/blocks")?;
+        info!("Creating new block database");
+        let cbtx = Transaction::new_coinbase(address, String::from("GENESIS_COINBASE"))?;
+        let genesis: Block = Block::new_genesis_block(cbtx);
+        db.insert(genesis.get_hash(), bincode::serialize(&genesis)?)?;
+        db.insert("LAST", genesis.get_hash().as_bytes())?;
+        let bc = Blockchain {
+            current_hash: genesis.get_hash(),
+            db: db.clone(),
+        };
+        bc.db.flush()?;
+
+        Ok(bc)
     }
 
     pub fn add_block(&mut self, data: String) -> Result<()> {
@@ -70,7 +81,7 @@ impl<'a> Iterator for BlockchainIterator<'a> {
                         None
                     }
                 }
-                None => None
+                None => None,
             };
         }
         None
@@ -80,7 +91,7 @@ impl<'a> Iterator for BlockchainIterator<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_add_block() {
         let mut bc = Blockchain::new().unwrap();
