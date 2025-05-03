@@ -56,3 +56,15 @@ impl Transaction {
         Ok(())
     }
 }
+
+impl TXInput {
+    pub fn can_unlock_output_with(&self, unlocking_data: &str) -> bool {
+        self.script_sig == unlocking_data
+    }
+}
+
+impl TXOutput {
+    pub fn can_be_unlocked_with(&self, unlocking_data: &str) -> bool {
+        self.script_pub_key == unlocking_data
+    }
+}
