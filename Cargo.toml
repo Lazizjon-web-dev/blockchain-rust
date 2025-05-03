@@ -6,7 +6,7 @@ edition = "2024"
 [dependencies]
 sha2 = "0.10.8"
 rust-crypto = "0.2.36"
-bincode = "2.0.1"
+bincode = "1.0.1"
 failure = "0.1.8"
 sled = "0.34.7"
 log = "0.4.27"
