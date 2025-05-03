@@ -17,3 +17,27 @@ pub struct TXOutput {
     pub value: i32,
     pub script_pub_key: String,
 }
+
+impl Transaction {
+    pub fn new_coinbase(to: String, mut data: String) -> Result<Self> {
+        if data == String::from("") {
+            data += &format!("Reward to {}", to);
+        }
+
+        let mut tx = Transaction {
+            id: String::new(),
+            vin: vec![ TXInput {
+                txid: String::new(),
+                vout: -1,
+                script_sig: data,
+            }],
+            vout: vec![ TXOutput {
+                value: 100,
+                script_pub_key: to,
+            }],
+        };
+        
+        tx.set_id()?;
+        Ok(tx)
+    }
+}
