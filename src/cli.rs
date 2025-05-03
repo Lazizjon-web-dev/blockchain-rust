@@ -1,5 +1,6 @@
 use crate::blockchain::Blockchain;
 use crate::error::Result;
+use clap::arg;
 use rustyline::DefaultEditor;
 
 pub struct Cli {
@@ -26,6 +27,18 @@ impl Cli {
                         "\\q" => {
                             println!("Exiting CLI...");
                             break Ok(());
+                        }
+                        "\\print" | "\\p" => {
+                            for block in self.bc.iter() {
+                                println!("Block: {:?}", block);
+                                // TODO: Add more block details
+                            }
+                        }
+                        "\\add" | "\\a" => {
+                            let args = arg!("<data>...").get_matches_from(line.split_whitespace());
+                            let data = args.get_one::<String>("data").unwrap();
+                            self.bc.add_block(data.clone())?;
+                            println!("Added block with data: {}", data);
                         }
                         // TODO: Add more commands
                         _ => {
