@@ -1,3 +1,6 @@
+use serde::{Serialize, Deserialize};
+use crypto::{sha2::Sha256, digest::Digest};
+use crate::error::Result;
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Transaction {
     pub id: String,
@@ -42,9 +45,9 @@ impl Transaction {
     }
 
     fn set_id(&mut self) -> Result<()> {
-        let mut hasher = Sha256::new();
-        let data = self.serialize()?;
-        hasher.input(&data);
+        let mut hasher= Sha256::new();
+        let data = bincode::serialize(self)?;
+        hasher.input(&data[..]);
         self.id = hasher.result_str();
         Ok(())
     }
