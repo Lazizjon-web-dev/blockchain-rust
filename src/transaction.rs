@@ -44,6 +44,10 @@ impl Transaction {
         Ok(tx)
     }
 
+    pub fn is_coinbase(&self) -> bool {
+        self.vin.len() == 1 && self.vin[0].txid.is_empty() && self.vin[0].vout == -1
+    }
+
     fn set_id(&mut self) -> Result<()> {
         let mut hasher= Sha256::new();
         let data = bincode::serialize(self)?;
