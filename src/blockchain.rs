@@ -26,7 +26,7 @@ impl Blockchain {
             }
             None=> {
                 let block = Block::new_genesis_block();
-                db.insert(block.get_hash(), block.serialize())?;
+                db.insert(block.get_hash(), bincode::serialize(&block)?)?;
                 db.insert("LAST", block.get_hash().as_bytes())?;
                 let bc = Blockchain {
                     current_hash: block.get_hash(),
@@ -42,7 +42,7 @@ impl Blockchain {
         let last_hash = self.db.get("LAST")?.unwrap();
         let last_hash = String::from_utf8(last_hash.to_vec())?;
         let new_block = Block::new(data, last_hash, TARGET_LEN)?;
-        self.db.insert(new_block.get_hash(), new_block.serialize())?;
+        self.db.insert(new_block.get_hash(), bincode::serialize(&new_block)?)?;
         self.db.insert("LAST", new_block.get_hash().as_bytes())?;
         self.current_hash = new_block.get_hash();
         Ok(())
@@ -63,7 +63,7 @@ impl<'a> Iterator for BlockchainIterator<'a> {
         if let Ok(encode_block) = self.bc.db.get(&self.current_hash) {
             return match encode_block {
                 Some(encode_block) => {
-                    if let Ok(block) = Block::deserialize(&encode_block) {
+                    if let Ok(block) = bincode::deserialize::<Block>(&encode_block) {
                         self.current_hash = block.get_prev_hash();
                         Some(block)
                     } else {
