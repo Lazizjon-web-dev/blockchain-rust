@@ -3,10 +3,11 @@ use crypto::sha2::Sha256;
 use log::info;
 use std::time::SystemTime;
 use crate::error::Result;
+use serde::{Serialize, Deserialize};
 
 pub const TARGET_LEN: usize = 4;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Block {
     timestamp: u128,
     transactions: String,
