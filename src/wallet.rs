@@ -67,4 +67,17 @@ impl Wallets {
         drop(db);
         Ok(wlt)
     }
+
+    pub fn save_all(&self) -> Result<()> {
+        let db = sled::open("data/wallets")?;
+        
+        for (address, wallet) in &self.wallets {
+            let data = bincode::serialize(wallet)?;
+            db.insert(address, data)?;
+        }
+
+        db.flush()?;
+        drop(db);
+        Ok(())
+    }
 }
