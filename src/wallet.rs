@@ -1,5 +1,6 @@
 use crate::error::Result;
 use crypto::{digest::Digest, ed25519, ripemd160::Ripemd160, sha2::Sha256};
+use log::info;
 use rand::{OsRng, Rng, RngCore};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -66,6 +67,26 @@ impl Wallets {
         }
         drop(db);
         Ok(wlt)
+    }
+
+    pub fn create_wallet(&mut self) -> String {
+        let wallet = Wallet::new();
+        let address = wallet.get_address();
+        self.wallets.insert(address.clone(), wallet);
+        info!("Create wallet: {}", address);
+        address
+    }
+
+    pub fn get_all_addresses(&self) -> Vec<String> {
+        let mut addresses: Vec<String> = Vec::new();
+        for (address, _) in &self.wallets {
+            addresses.push(address.clone());
+        }
+        addresses
+    }
+
+    pub fn get_wallet(&self, address: &str) -> Option<&Wallet> {
+        self.wallets.get(address)
     }
 
     pub fn save_all(&self) -> Result<()> {
