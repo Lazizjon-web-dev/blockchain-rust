@@ -1,53 +1,87 @@
-use crate::blockchain::Blockchain;
-use crate::error::Result;
+use crate::{blockchain::Blockchain, error::Result, transaction::Transaction};
 use clap::{Command, arg};
+use std::process::exit;
 
-pub struct Cli {
-    bc: Blockchain,
-}
+pub struct Cli {}
 
 impl Cli {
     pub fn new() -> Result<Self> {
-        Ok(Cli {
-            bc: Blockchain::new()?,
-        })
+        Ok(Cli {})
     }
     pub fn run(&mut self) -> Result<()> {
-        let matches = Command::new("Blockchain CLI")
-            .version("1.0")
+        let matches = Command::new("blockchain-rust")
+            .version("0.1")
             .author("Lazizjon-web-dev")
             .about("A simple CLI for interacting with a blockchain")
             .subcommand(Command::new("print").about("Print the blockchain"))
             .subcommand(
-                Command::new("add")
-                    .about("Add a new block")
-                    .arg(arg!(<DATA>" 'the blockchain data'")),
+                Command::new("getbalance")
+                    .about("Get the balance of an address")
+                    .arg(arg!(<address> "'The address to get the balance of'")),
+            )
+            .subcommand(
+                Command::new("create")
+                    .about("Create a new blockchain")
+                    .arg(arg!(<ADDRESS>"'The address to send genesis block reward to' ")),
+            )
+            .subcommand(
+                Command::new("send")
+                    .about("send coins in the blockchain")
+                    .arg(arg!(<FROM>" 'Source wallet address'"))
+                    .arg(arg!(<TO>" 'Destination wallet address'"))
+                    .arg(arg!(<AMOUNT>" 'Amount to send'")),
             )
             .get_matches();
-        if let Some(ref matches) = matches.subcommand_matches("add") {
-            if let Some(c) = matches.get_one::<String>("DATA") {
-                self.add_block(c.clone())?;
-                println!("Added block with data: {}", c);
-            } else {
-                println!("No data provided for the block.");
+
+        if let Some(ref matches) = matches.subcommand_matches("create") {
+            if let Some(address) = matches.get_one::<String>("ADDRESS") {
+                let address = String::from(address);
+                Blockchain::create_blockchain(address.clone())?;
+                println!("Create blockchain");
             }
         }
 
-        if let Some(_) = matches.subcommand_matches("print") {
-            self.print_chain()?;
+        if let Some(ref matches) = matches.subcommand_matches("getbalance") {
+            if let Some(address) = matches.get_one::<String>("ADDRESS") {
+                let address = String::from(address);
+                let bc = Blockchain::new()?;
+                let utxos = bc.find_UTXO(&address);
+                let mut balance = 0;
+                for out in utxos {
+                    balance += out.value;
+                }
+                println!("Balance of '{}': {}", address, balance);
+            }
         }
 
-        Ok(())
-    }
+        if let Some(ref matches) = matches.subcommand_matches("send") {
+            let from = if let Some(address) = matches.get_one::<String>("FROM") {
+                address
+            } else {
+                println!("from not supply!: usage");
+                exit(1)
+            };
 
-    fn add_block(&mut self, data: String) -> Result<()> {
-        self.bc.add_block(data)?;
-        Ok(())
-    }
-    fn print_chain(&self) -> Result<()> {
-        for block in self.bc.iter() {
-            println!("Block: {:?}", block);
+            let to = if let Some(address) = matches.get_one::<String>("TO") {
+                address
+            } else {
+                println!("to not supply!: usage");
+                exit(1)
+            };
+
+            let amount: i32 = if let Some(amount) = matches.get_one::<String>("AMOUNT") {
+                amount.parse()?
+            } else {
+                println!("amount not supply!: usage");
+                exit(1)
+            };
+
+            let mut bc = Blockchain::new()?;
+            let tx = Transaction::new_UTXO(from, to, amount, &bc)?;
+            bc.add_block(vec![tx])?;
+            println!("Transaction sent");
         }
+
         Ok(())
     }
 }
