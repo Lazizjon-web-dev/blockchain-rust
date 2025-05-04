@@ -1,4 +1,4 @@
-use crate::{blockchain::Blockchain, error::Result, transaction::Transaction};
+use crate::{blockchain::Blockchain, error::Result, transaction::Transaction, wallet::Wallets};
 use clap::{Command, arg};
 use std::process::exit;
 
@@ -14,6 +14,8 @@ impl Cli {
             .author("Lazizjon-web-dev")
             .about("A simple CLI for interacting with a blockchain")
             .subcommand(Command::new("print").about("Print the blockchain"))
+            .subcommand(Command::new("create_wallet").about("Create a new wallet"))
+            .subcommand(Command::new("list_addresses").about("List all addresses"))
             .subcommand(
                 Command::new("getbalance")
                     .about("Get the balance of an address")
@@ -32,6 +34,22 @@ impl Cli {
                     .arg(arg!(<AMOUNT>" 'Amount to send'")),
             )
             .get_matches();
+
+        if let Some(_) = matches.subcommand_matches("create_wallet") {
+            let mut ws = Wallets::new()?;
+            let address = ws.create_wallet();
+            ws.save_all()?;
+            println!("success: address {}", address);
+        }
+
+        if let Some(_) = matches.subcommand_matches("list_addresses") {
+            let ws = Wallets::new()?;
+            let addresses = ws.get_all_addresses();
+            println!("Addresses:");
+            for address in addresses {
+                println!("{}", address);
+            }
+        }
 
         if let Some(ref matches) = matches.subcommand_matches("create") {
             if let Some(address) = matches.get_one::<String>("ADDRESS") {
