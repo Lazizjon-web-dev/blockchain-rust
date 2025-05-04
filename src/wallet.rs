@@ -50,3 +50,21 @@ pub fn hash_pub_key(pub_key: &mut Vec<u8>) {
 pub struct Wallets {
     wallets: HashMap<String, Wallet>,
 }
+
+impl Wallets {
+    pub fn new() -> Result<Self> {
+        let mut wlt = Wallets {
+            wallets: HashMap::<String, Wallet>::new(),
+        }
+
+        let db = sled::open("data/wallets")?;
+        for item in db.into_iter() {
+            let i = item?;
+            let address = String::from_utf8(i.0.to_vec())?;
+            let wallet = bincode::deserialize(&i.1.to_vec())?;
+            wlt.wallets.insert(address, wallet);
+        }
+        drop(db);
+        Ok(wlt)
+    }
+}
