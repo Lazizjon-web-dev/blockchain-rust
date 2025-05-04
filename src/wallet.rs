@@ -56,7 +56,7 @@ impl Wallets {
     pub fn new() -> Result<Self> {
         let mut wlt = Wallets {
             wallets: HashMap::<String, Wallet>::new(),
-        }
+        };
 
         let db = sled::open("data/wallets")?;
         for item in db.into_iter() {
@@ -91,7 +91,7 @@ impl Wallets {
 
     pub fn save_all(&self) -> Result<()> {
         let db = sled::open("data/wallets")?;
-        
+
         for (address, wallet) in &self.wallets {
             let data = bincode::serialize(wallet)?;
             db.insert(address, data)?;
