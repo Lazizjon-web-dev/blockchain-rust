@@ -1,6 +1,8 @@
+use crate::error::Result;
 use crypto::{digest::Digest, ed25519, ripemd160::Ripemd160, sha2::Sha256};
-use rand::{Rng, RngCore, rngs::OsRng};
+use rand::{OsRng, Rng, RngCore};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Wallet {
@@ -33,7 +35,6 @@ impl Wallet {
         // 0 O 1 I
         address.encode().unwrap()
     }
-
 }
 
 pub fn hash_pub_key(pub_key: &mut Vec<u8>) {
