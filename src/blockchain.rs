@@ -118,6 +118,36 @@ impl Blockchain {
         }
         utxos
     }
+
+    pub fn find_spendable_outputs(
+        &self,
+        address: &str,
+        amount: i32,
+    ) -> (i32, HashMap<String, Vec<i32>>) {
+        let mut unspent_outputs: HashMap<String, Vec<i32>> = HashMap::new();
+        let mut accumulated: i32 = 0;
+        let unspend_TXs = self.find_unspent_transactions(address);
+        for tx in unspend_TXs {
+            for index in 0..tx.vout.len() {
+                if tx.vout[index].can_be_unlocked_with(address) && accumulated < amount {
+                    match unspent_outputs.get_mut(&tx.id) {
+                        Some(v) => {
+                            v.push(index as i32);
+                        }
+                        None => {
+                            unspent_outputs.insert(tx.id.clone(), vec![index as i32]);
+                        }
+                    }
+                    accumulated += tx.vout[index].value;
+
+                    if accumulated >= amount {
+                        return (accumulated, unspent_outputs);
+                    }
+                }
+            }
+        }
+        (accumulated, unspent_outputs)
+    }
 }
 
 impl<'a> Iterator for BlockchainIterator<'a> {
