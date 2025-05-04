@@ -1,4 +1,4 @@
-use crate::{blockchain::Blockchain, error::Result};
+use crate::{blockchain::Blockchain, error::Result, tx::{TXInput, TXOutput}};
 use crypto::{digest::Digest, sha2::Sha256};
 use failure::format_err;
 use log::error;
@@ -8,19 +8,6 @@ pub struct Transaction {
     pub id: String,
     pub vin: Vec<TXInput>,
     pub vout: Vec<TXOutput>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct TXInput {
-    pub txid: String,
-    pub vout: i32,
-    pub script_sig: String,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct TXOutput {
-    pub value: i32,
-    pub script_pub_key: String,
 }
 
 impl Transaction {
@@ -85,7 +72,7 @@ impl Transaction {
                 script_pub_key: to,
             }],
         };
-        
+
         tx.set_id()?;
         Ok(tx)
     }
@@ -100,17 +87,5 @@ impl Transaction {
         hasher.input(&data[..]);
         self.id = hasher.result_str();
         Ok(())
-    }
-}
-
-impl TXInput {
-    pub fn can_unlock_output_with(&self, unlocking_data: &str) -> bool {
-        self.script_sig == unlocking_data
-    }
-}
-
-impl TXOutput {
-    pub fn can_be_unlocked_with(&self, unlocking_data: &str) -> bool {
-        self.script_pub_key == unlocking_data
     }
 }
