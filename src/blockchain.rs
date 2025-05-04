@@ -1,6 +1,6 @@
 use crate::block::{Block, TARGET_LEN};
 use crate::error::Result;
-use crate::transaction::Transaction;
+use crate::transaction::{TXOutput, Transaction};
 use log::info;
 use sled::{self, Db};
 use std::collections::HashMap;
@@ -103,6 +103,20 @@ impl Blockchain {
         }
 
         unspend_TXOs
+    }
+
+    pub fn find_UTXO(&self, address: &str) -> Vec<TXOutput> {
+        let mut utxos = Vec::<TXOutput>::new();
+        let unspend_TXs = self.find_unspent_transactions(address);
+
+        for tx in unspend_TXs {
+            for out in &tx.vout {
+                if out.can_be_unlocked_with(&address) {
+                    utxos.push(out.clone());
+                }
+            }
+        }
+        utxos
     }
 }
 
