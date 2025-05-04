@@ -3,6 +3,7 @@ use crate::error::Result;
 use crate::transaction::Transaction;
 use log::info;
 use sled::{self, Db};
+use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct Blockchain {
@@ -64,6 +65,44 @@ impl Blockchain {
             current_hash: self.current_hash.clone(),
             bc: &self,
         }
+    }
+
+    fn find_unspent_transactions(&self, address: &str) -> Vec<Transaction> {
+        let mut spent_TXOs: HashMap<String, Vec<i32>> = HashMap::new();
+        let mut unspend_TXOs: Vec<Transaction> = Vec::new();
+
+        for block in self.iter() {
+            for tx in block.get_transactions() {
+                for index in 0..tx.vout.len() {
+                    if let Some(ids) = spent_TXOs.get(&tx.id) {
+                        if ids.contains(&(index as i32)) {
+                            continue;
+                        }
+                    }
+
+                    if tx.vout[index].can_be_unlocked_with(address) {
+                        unspend_TXOs.push(tx.to_owned());
+                    }
+                }
+
+                if !tx.is_coinbase() {
+                    for i in &tx.vin {
+                        if i.can_unlock_output_with(address) {
+                            match spent_TXOs.get_mut(&i.txid) {
+                                Some(v) => {
+                                    v.push(i.vout);
+                                }
+                                None => {
+                                    spent_TXOs.insert(i.txid.clone(), vec![i.vout]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        unspend_TXOs
     }
 }
 
