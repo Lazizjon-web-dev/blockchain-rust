@@ -47,6 +47,10 @@ impl Block {
         self.prev_block_hash.clone()
     }
 
+    pub fn get_transactions(&self) -> &Vec<Transaction> {
+        &self.transactions
+    }
+
     fn run_proof_of_work(&mut self) -> Result<()> {
         info!("Mining the block");
         while !self.validate()? {
