@@ -2,6 +2,7 @@ use crate::{
     blockchain::Blockchain,
     error::Result,
     tx::{TXInput, TXOutput},
+    wallet::{Wallets, hash_pub_key},
 };
 use crypto::{digest::Digest, ed25519, sha2::Sha256};
 use failure::format_err;
@@ -18,6 +19,19 @@ pub struct Transaction {
 impl Transaction {
     pub fn new_UTXO(from: &str, to: &str, amount: i32, bc: &Blockchain) -> Result<Self> {
         let mut vin = Vec::new();
+
+        let wallets = Wallets::new()?;
+        let wallet = match wallets.get_wallet(from) {
+            Some(wallet) => wallet,
+            None => return Err(format_err!("From Wallet not found")),
+        };
+        if let None = wallets.get_wallet(&to) {
+            return Err(format_err!("To Wallet not found"));
+        }
+
+        let pub_key_hash = wallet.public_key.clone();
+        hash_pub_key(&mut pub_key_hash);
+
         let acc_v = bc.find_spendable_outputs(from, amount);
 
         if acc_v.0 < amount {
@@ -33,22 +47,17 @@ impl Transaction {
                 let input = TXInput {
                     txid: tx.0.clone(),
                     vout: out,
-                    script_sig: String::from(from),
+                    signature: Vec::new(),
+                    pub_key: wallet.public_key.clone(),
                 };
                 vin.push(input);
             }
         }
 
-        let mut vout = vec![TXOutput {
-            value: amount,
-            script_pub_key: String::from(to),
-        }];
+        let mut vout = vec![TXOutput::new(amount, to.to_string())?];
 
         if acc_v.0 > amount {
-            vout.push(TXOutput {
-                value: acc_v.0 - amount,
-                script_pub_key: String::from(from),
-            });
+            vout.push(TXOutput::new(acc_v.0 - amount, from.to_string())?)
         }
 
         let mut tx = Transaction {
