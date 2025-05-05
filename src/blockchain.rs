@@ -68,7 +68,7 @@ impl Blockchain {
         }
     }
 
-    fn find_unspent_transactions(&self, address: &str) -> Vec<Transaction> {
+    fn find_unspent_transactions(&self, address: &[u8]) -> Vec<Transaction> {
         let mut spent_TXOs: HashMap<String, Vec<i32>> = HashMap::new();
         let mut unspend_TXOs: Vec<Transaction> = Vec::new();
 
@@ -106,7 +106,7 @@ impl Blockchain {
         unspend_TXOs
     }
 
-    pub fn find_UTXO(&self, address: &str) -> Vec<TXOutput> {
+    pub fn find_UTXO(&self, address: &[u8]) -> Vec<TXOutput> {
         let mut utxos = Vec::<TXOutput>::new();
         let unspend_TXs = self.find_unspent_transactions(address);
 
@@ -122,7 +122,7 @@ impl Blockchain {
 
     pub fn find_spendable_outputs(
         &self,
-        address: &str,
+        address: &[u8],
         amount: i32,
     ) -> (i32, HashMap<String, Vec<i32>>) {
         let mut unspent_outputs: HashMap<String, Vec<i32>> = HashMap::new();
