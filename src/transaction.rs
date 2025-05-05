@@ -3,7 +3,7 @@ use crate::{
     error::Result,
     tx::{TXInput, TXOutput},
 };
-use crypto::{digest::Digest, sha2::Sha256};
+use crypto::{digest::Digest, ed25519, sha2::Sha256};
 use failure::format_err;
 use log::error;
 use serde::{Deserialize, Serialize};
@@ -101,6 +101,18 @@ impl Transaction {
             }
         }
         let mut tx_copy = self.trim_copy();
+
+        for in_id in 0..self.vin.len() {
+            let prev_tx = prev_TXs.get(&tx_copy.vin[in_id].txid).unwrap();
+            tx_copy.vin[in_id].signature.clear();
+            tx_copy.vin[in_id].pub_key = prev_tx.vout[tx_copy.vin[in_id].vout as usize]
+                .pub_key_hash
+                .clone();
+            tx_copy.id = tx_copy.hash();
+            tx_copy.vin[in_id].pub_key.clear();
+            let signature = ed25519::signature(tx_copy.id.as_bytes(), private_key);
+            self.vin[in_id].signature = signature.to_vec();
+        }
         Ok(())
     }
 
