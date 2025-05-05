@@ -68,7 +68,7 @@ impl Transaction {
 
         tx.set_id()?;
         bc.sign_transaction(&mut tx, &wallet.secret_key)?;
-        
+
         Ok(tx)
     }
 
@@ -82,12 +82,10 @@ impl Transaction {
             vin: vec![TXInput {
                 txid: String::new(),
                 vout: -1,
-                script_sig: data,
+                signature: Vec::new(),
+                pub_key: Vec::from(data.as_bytes()),
             }],
-            vout: vec![TXOutput {
-                value: 100,
-                script_pub_key: to,
-            }],
+            vout: vec![TXOutput::new(100, to)?],
         };
 
         tx.set_id()?;
