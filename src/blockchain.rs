@@ -167,6 +167,15 @@ impl Blockchain {
         tx.sign(private_key, prev_TXs)?;
         Ok(())
     }
+
+    fn get_prev_tx_map(&self, tx: &Transaction) -> Result<HashMap<String, Transaction>> {
+        let mut prev_TXs = HashMap::new();
+        for vin in &tx.vin {
+            let prev_TX = self.find_transaction(&vin.txid)?;
+            prev_TXs.insert(prev_TX.id.clone(), prev_TX);
+        }
+        Ok(prev_TXs)
+    }
 }
 
 impl<'a> Iterator for BlockchainIterator<'a> {
