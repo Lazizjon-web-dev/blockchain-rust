@@ -116,13 +116,46 @@ impl Transaction {
         Ok(())
     }
 
+    pub fn verify(&mut self, prev_TXs: HashMap<String, Transaction>) -> Result<bool> {
+        if self.is_coinbase() {
+            return Ok(true);
+        }
+
+        for vin in &self.vin {
+            if prev_TXs.get(&vin.txid).unwrap().id.is_empty() {
+                return Err(format_err!("ERROR: Previous transaction is not correct"));
+            }
+        }
+
+        let mut tx_copy = self.trim_copy();
+
+        for in_id in 0..self.vin.len() {
+            let prev_tx = prev_TXs.get(&tx_copy.vin[in_id].txid).unwrap();
+            tx_copy.vin[in_id].signature.clear();
+            tx_copy.vin[in_id].pub_key = prev_tx.vout[tx_copy.vin[in_id].vout as usize]
+                .pub_key_hash
+                .clone();
+            tx_copy.id = tx_copy.hash()?;
+            tx_copy.vin[in_id].pub_key.clear();
+            if !ed25519::verify(
+                &tx_copy.id.as_bytes(),
+                &self.vin[in_id].pub_key,
+                &self.vin[in_id].pub_key,
+            ) {
+                return Ok(false);
+            }
+        }
+
+        Ok(true)
+    }
+
     fn hash(&mut self) -> Result<String> {
         self.id = String::new();
         let data = bincode::serialize(self)?;
         let mut hasher = Sha256::new();
         hasher.input(&data[..]);
         Ok(hasher.result_str())
-    } 
+    }
 
     fn trim_copy(&self) -> Self {
         let mut vin = Vec::new();
