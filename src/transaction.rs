@@ -1,8 +1,13 @@
-use crate::{blockchain::Blockchain, error::Result, tx::{TXInput, TXOutput}};
+use crate::{
+    blockchain::Blockchain,
+    error::Result,
+    tx::{TXInput, TXOutput},
+};
 use crypto::{digest::Digest, sha2::Sha256};
 use failure::format_err;
 use log::error;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Transaction {
     pub id: String,
@@ -79,6 +84,24 @@ impl Transaction {
 
     pub fn is_coinbase(&self) -> bool {
         self.vin.len() == 1 && self.vin[0].txid.is_empty() && self.vin[0].vout == -1
+    }
+
+    pub fn sign(
+        &mut self,
+        private_key: &[u8],
+        prev_TXs: HashMap<String, Transaction>,
+    ) -> Result<()> {
+        if self.is_coinbase() {
+            return Ok(());
+        }
+
+        for vin in &self.vin {
+            if prev_TXs.get(&vin.txid).unwrap().id.is_empty() {
+                return Err(format_err!("ERROR: Previous transaction is not correct"));
+            }
+        }
+        let mut tx_copy = self.trim_copy();
+        Ok(())
     }
 
     fn set_id(&mut self) -> Result<()> {
