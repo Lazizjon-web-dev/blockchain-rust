@@ -168,6 +168,11 @@ impl Blockchain {
         Ok(())
     }
 
+    pub fn verify_transaction(&self, tx: &mut Transaction) -> Result<bool> {
+        let prev_TXs = self.get_prev_tx_map(tx)?;
+        tx.verify(prev_TXs)
+    }
+
     fn get_prev_tx_map(&self, tx: &Transaction) -> Result<HashMap<String, Transaction>> {
         let mut prev_TXs = HashMap::new();
         for vin in &tx.vin {
