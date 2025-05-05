@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 pub struct TXInput {
     pub txid: String,
     pub vout: i32,
-    pub script_sig: Vec<u8>,
+    pub signature: Vec<u8>,
     pub pub_key: Vec<u8>,
 }
 
