@@ -1,3 +1,4 @@
+use crate::error::Result;
 use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TXInput {
@@ -20,6 +21,15 @@ impl TXInput {
 }
 
 impl TXOutput {
+    pub fn new(value: i32, address: String) -> Result<Self> {
+        let mut txo = TXOutput {
+            value,
+            pub_key_hash: Vec::new(),
+        };
+        txo.lock(&address)?;
+        Ok(txo)
+    }
+    
     pub fn can_be_unlocked_with(&self, unlocking_data: &str) -> bool {
         self.script_pub_key == unlocking_data
     }
