@@ -1,4 +1,4 @@
-use crate::error::Result;
+use crate::{error::Result, wallet::hash_pub_key};
 use bitcoincash_addr::Address;
 use log::debug;
 use serde::{Deserialize, Serialize};
@@ -17,8 +17,10 @@ pub struct TXOutput {
 }
 
 impl TXInput {
-    pub fn can_unlock_output_with(&self, unlocking_data: &str) -> bool {
-        self.script_sig == unlocking_data
+    pub fn can_unlock_output_with(&self, unlocking_data: &[u8]) -> bool {
+        let mut pub_key_hash = self.pub_key.clone();
+        hash_pub_key(&mut pub_key_hash);
+        pub_key_hash == unlocking_data
     }
 }
 
@@ -32,8 +34,8 @@ impl TXOutput {
         Ok(txo)
     }
 
-    pub fn can_be_unlocked_with(&self, unlocking_data: &str) -> bool {
-        self.script_pub_key == unlocking_data
+    pub fn can_be_unlocked_with(&self, unlocking_data: &[u8]) -> bool {
+        self.pub_key_hash == unlocking_data
     }
 
     fn lock(&mut self, address: &str) -> Result<()> {
