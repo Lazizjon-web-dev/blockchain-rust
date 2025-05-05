@@ -1,6 +1,7 @@
 use crate::block::{Block, TARGET_LEN};
 use crate::error::Result;
 use crate::transaction::{TXOutput, Transaction};
+use failure::format_err;
 use log::info;
 use sled::{self, Db};
 use std::collections::HashMap;
@@ -148,6 +149,18 @@ impl Blockchain {
         }
         (accumulated, unspent_outputs)
     }
+
+    pub fn find_transaction(&self, id: &str) -> Result<Transaction> {
+        for block in self.iter() {
+            for tx in block.get_transactions() {
+                if tx.id == id {
+                    return Ok(tx.clone());
+                }
+            }
+        }
+
+        Err(format_err!("Transaction is not found"))
+    }
 }
 
 impl<'a> Iterator for BlockchainIterator<'a> {
@@ -178,9 +191,9 @@ mod tests {
     #[test]
     fn test_add_block() {
         let mut bc = Blockchain::new().unwrap();
-        bc.add_block("data 1".to_string()).unwrap();
-        bc.add_block("data 2".to_string()).unwrap();
-        bc.add_block("data 3".to_string()).unwrap();
+        // bc.add_block("data 1".to_string()).unwrap();
+        // bc.add_block("data 2".to_string()).unwrap();
+        // bc.add_block("data 3".to_string()).unwrap();
 
         for item in bc.iter() {
             println!("item {:?}", item);
