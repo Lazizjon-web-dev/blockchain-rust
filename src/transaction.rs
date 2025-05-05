@@ -29,7 +29,7 @@ impl Transaction {
             return Err(format_err!("To Wallet not found"));
         }
 
-        let pub_key_hash = wallet.public_key.clone();
+        let mut pub_key_hash = wallet.public_key.clone();
         hash_pub_key(&mut pub_key_hash);
 
         let acc_v = bc.find_spendable_outputs(from, amount);
