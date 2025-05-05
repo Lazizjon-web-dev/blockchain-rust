@@ -104,6 +104,33 @@ impl Transaction {
         Ok(())
     }
 
+    fn trim_copy(&self) -> Self {
+        let mut vin = Vec::new();
+        let mut vout = Vec::new();
+
+        for v in &self.vin {
+            vin.push(TXInput {
+                txid: v.txid.clone(),
+                vout: v.vout.clone(),
+                signature: Vec::new(),
+                pub_key: Vec::new(),
+            });
+        }
+
+        for v in &self.vout {
+            vout.push(TXOutput {
+                value: v.value,
+                pub_key_hash: v.pub_key_hash.clone(),
+            })
+        }
+
+        Self {
+            id: self.id.clone(),
+            vin,
+            vout,
+        }
+    }
+
     fn set_id(&mut self) -> Result<()> {
         let mut hasher = Sha256::new();
         let data = bincode::serialize(self)?;
