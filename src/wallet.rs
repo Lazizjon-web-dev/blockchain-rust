@@ -1,7 +1,8 @@
 use crate::error::Result;
+use bitcoincash_addr::{Address, HashType, Scheme};
 use crypto::{digest::Digest, ed25519, ripemd160::Ripemd160, sha2::Sha256};
 use log::info;
-use rand::{OsRng, Rng, RngCore};
+use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -14,7 +15,7 @@ pub struct Wallet {
 impl Wallet {
     fn new() -> Self {
         let mut key: [u8; 32] = [0; 32];
-        OsRng.fill_bytes(&mut key);
+        thread_rng().fill_bytes(&mut key);
         let (secret_key, public_key) = ed25519::keypair(&key);
         let secret_key = secret_key.to_vec();
         let public_key = public_key.to_vec();
