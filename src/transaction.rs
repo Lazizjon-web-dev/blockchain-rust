@@ -32,7 +32,7 @@ impl Transaction {
         let mut pub_key_hash = wallet.public_key.clone();
         hash_pub_key(&mut pub_key_hash);
 
-        let acc_v = bc.find_spendable_outputs(from, amount);
+        let acc_v = bc.find_spendable_outputs(&pub_key_hash, amount);
 
         if acc_v.0 < amount {
             error!("Not enough funds");
@@ -66,7 +66,7 @@ impl Transaction {
             vout,
         };
 
-        tx.hash()?;
+        tx.id = tx.hash()?;
         bc.sign_transaction(&mut tx, &wallet.secret_key)?;
 
         Ok(tx)
@@ -88,7 +88,7 @@ impl Transaction {
             vout: vec![TXOutput::new(100, to)?],
         };
 
-        tx.hash()?;
+        tx.id = tx.hash()?;
         Ok(tx)
     }
 
