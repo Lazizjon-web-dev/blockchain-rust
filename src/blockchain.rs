@@ -161,6 +161,12 @@ impl Blockchain {
 
         Err(format_err!("Transaction is not found"))
     }
+
+    pub fn sign_transaction(&self, tx: &mut Transaction, private_key: &[u8]) -> Result<()> {
+        let prev_TXs = self.get_prev_tx_map(tx)?;
+        tx.sign(private_key, prev_TXs)?;
+        Ok(())
+    }
 }
 
 impl<'a> Iterator for BlockchainIterator<'a> {
