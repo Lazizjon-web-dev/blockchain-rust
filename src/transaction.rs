@@ -66,7 +66,7 @@ impl Transaction {
             vout,
         };
 
-        tx.set_id()?;
+        tx.hash()?;
         bc.sign_transaction(&mut tx, &wallet.secret_key)?;
 
         Ok(tx)
@@ -88,7 +88,7 @@ impl Transaction {
             vout: vec![TXOutput::new(100, to)?],
         };
 
-        tx.set_id()?;
+        tx.hash()?;
         Ok(tx)
     }
 
@@ -192,13 +192,5 @@ impl Transaction {
             vin,
             vout,
         }
-    }
-
-    fn set_id(&mut self) -> Result<()> {
-        let mut hasher = Sha256::new();
-        let data = bincode::serialize(self)?;
-        hasher.input(&data[..]);
-        self.id = hasher.result_str();
-        Ok(())
     }
 }
