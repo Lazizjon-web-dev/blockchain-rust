@@ -65,7 +65,10 @@ impl Transaction {
             vin,
             vout,
         };
+
         tx.set_id()?;
+        bc.sign_transaction(&mut tx, &wallet.secret_key)?;
+        
         Ok(tx)
     }
 
