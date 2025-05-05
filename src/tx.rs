@@ -1,4 +1,6 @@
 use crate::error::Result;
+use bitcoincash_addr::Address;
+use log::debug;
 use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TXInput {
@@ -29,8 +31,15 @@ impl TXOutput {
         txo.lock(&address)?;
         Ok(txo)
     }
-    
+
     pub fn can_be_unlocked_with(&self, unlocking_data: &str) -> bool {
         self.script_pub_key == unlocking_data
+    }
+
+    fn lock(&mut self, address: &str) -> Result<()> {
+        let pub_key_hash = Address::decode(address).unwrap().body;
+        debug!("lock: {}", address);
+        self.pub_key_hash = pub_key_hash;
+        Ok(())
     }
 }
