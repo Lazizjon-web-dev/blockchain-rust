@@ -108,13 +108,21 @@ impl Transaction {
             tx_copy.vin[in_id].pub_key = prev_tx.vout[tx_copy.vin[in_id].vout as usize]
                 .pub_key_hash
                 .clone();
-            tx_copy.id = tx_copy.hash();
+            tx_copy.id = tx_copy.hash()?;
             tx_copy.vin[in_id].pub_key.clear();
             let signature = ed25519::signature(tx_copy.id.as_bytes(), private_key);
             self.vin[in_id].signature = signature.to_vec();
         }
         Ok(())
     }
+
+    fn hash(&mut self) -> Result<String> {
+        self.id = String::new();
+        let data = bincode::serialize(self)?;
+        let mut hasher = Sha256::new();
+        hasher.input(&data[..]);
+        Ok(hasher.result_str())
+    } 
 
     fn trim_copy(&self) -> Self {
         let mut vin = Vec::new();
