@@ -33,7 +33,7 @@ impl Transaction {
         let mut pub_key_hash = wallet.public_key.clone();
         hash_pub_key(&mut pub_key_hash);
 
-        let acc_v = bc.find_spendable_outputs(&pub_key_hash, amount);
+        let acc_v = bc.find_spendable_outputs(&pub_key_hash, amount)?;
 
         if acc_v.0 < amount {
             error!("Not enough funds");
@@ -68,7 +68,7 @@ impl Transaction {
         };
 
         tx.id = tx.hash()?;
-        bc.sign_transaction(&mut tx, &wallet.secret_key)?;
+        bc.blockchain.sign_transaction(&mut tx, &wallet.secret_key)?;
 
         Ok(tx)
     }
