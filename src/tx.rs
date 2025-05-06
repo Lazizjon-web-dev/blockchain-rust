@@ -16,6 +16,11 @@ pub struct TXOutput {
     pub pub_key_hash: Vec<u8>,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct TXOutputs {
+    pub outputs: Vec<TXOutput>,
+}
+
 impl TXInput {
     pub fn can_unlock_output_with(&self, unlocking_data: &[u8]) -> bool {
         let mut pub_key_hash = self.pub_key.clone();
