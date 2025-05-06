@@ -2,7 +2,7 @@ use crate::{
     blockchain::Blockchain,
     error::Result,
     transaction::Transaction,
-    uxtoset::UTXOSet,
+    utxoset::UTXOSet,
     wallet::Wallets,
 };
 use bitcoincash_addr::Address;

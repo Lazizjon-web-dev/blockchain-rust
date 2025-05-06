@@ -2,7 +2,7 @@ use crate::{
     blockchain::Blockchain,
     error::Result,
     tx::{TXInput, TXOutput},
-    uxtoset::UTXOSet,
+    utxoset::UTXOSet,
     wallet::{Wallets, hash_pub_key},
 };
 use crypto::{digest::Digest, ed25519, sha2::Sha256};
