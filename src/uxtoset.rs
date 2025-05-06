@@ -1,4 +1,4 @@
-use crate::{blockchain::Blockchain, error::Result, tx::TXOutput};
+use crate::{blockchain::Blockchain, error::Result, tx::{TXOutput, TXOutputs}};
 use sled;
 use std::fs::remove_dir_all;
 
@@ -95,5 +95,23 @@ impl UTXOSet {
             }
         }
         (accumulated, unspent_outputs)
+    }
+
+    pub fn find_UTXO(&self, pub_hash_key: &[u8]) -> Result<TXOutputs> {
+        let mut utxos = TXOutputs {
+            outputs: Vec::new(),
+        };
+        let db = sled::open("data/utxos")?;
+        for kv in db.iter() {
+            let (_, value) = kv?;
+            let outs: TXOutputs = bincode::deserialize(&value.to_vec())?;
+
+            for out in outs.outputs {
+                if out.can_be_unlocked_with(pub_hash_key) {
+                    utxos.outputs.push(out.clone());
+                }
+            }
+        }
+        Ok(utxos)
     }
 }
