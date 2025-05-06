@@ -23,6 +23,7 @@ impl Cli {
             .subcommand(Command::new("print").about("Print the blockchain"))
             .subcommand(Command::new("create_wallet").about("Create a new wallet"))
             .subcommand(Command::new("list_addresses").about("List all addresses"))
+            .subcommand(Command::new("reindex").about("Reindex the UTXO set"))
             .subcommand(
                 Command::new("getbalance")
                     .about("Get the balance of an address")
@@ -56,6 +57,14 @@ impl Cli {
             for address in addresses {
                 println!("{}", address);
             }
+        }
+        
+        if let Some(_) = matches.subcommand_matches("reindex") {
+            let bc = Blockchain::new()?;
+            let utxo_set = UTXOSet { blockchain: bc };
+            utxo_set.reindex()?;
+            let count = utxo_set.count_transactions()?;
+            println!("Done! There are {} transactions in the UTXO set", count);
         }
 
         if let Some(ref matches) = matches.subcommand_matches("create") {
