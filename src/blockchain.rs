@@ -39,6 +39,9 @@ impl Blockchain {
 
     pub fn create_blockchain(address: String) -> Result<Self> {
         info!("Creating blockchain");
+        if let Err(_) = std::fs::remove_dir_all("data/blocks") {
+            info!("not exists any blocks to delete")
+        }
         let db: Db = sled::open("data/blocks")?;
         info!("Creating new block database");
         let cbtx = Transaction::new_coinbase(address, String::from("GENESIS_COINBASE"))?;

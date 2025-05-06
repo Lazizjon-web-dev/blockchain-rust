@@ -1,4 +1,5 @@
 use crate::{blockchain::Blockchain, error::Result, tx::{TXOutput, TXOutputs}};
+use log::info;
 use sled;
 use std::fs::remove_dir_all;
 
@@ -8,7 +9,9 @@ pub struct UTXOSet {
 
 impl UTXOSet {
     pub fn reindex(&self) -> Result<()> {
-        remove_dir_all("data/utxos")?;
+        if let Err(_) = remove_dir_all("data/utxos") {
+            info!("not exists any utxos to delete")
+        }
         let db = sled::open("data/utxos")?;
 
         let utxos = self.blockchain.find_UTXO()?;
