@@ -2,6 +2,7 @@ use crate::{
     blockchain::Blockchain,
     error::Result,
     tx::{TXInput, TXOutput},
+    uxtoset::UTXOSet,
     wallet::{Wallets, hash_pub_key},
 };
 use crypto::{digest::Digest, ed25519, sha2::Sha256};
@@ -17,7 +18,7 @@ pub struct Transaction {
 }
 
 impl Transaction {
-    pub fn new_UTXO(from: &str, to: &str, amount: i32, bc: &Blockchain) -> Result<Self> {
+    pub fn new_UTXO(from: &str, to: &str, amount: i32, bc: &UTXOSet) -> Result<Self> {
         let mut vin = Vec::new();
 
         let wallets = Wallets::new()?;
