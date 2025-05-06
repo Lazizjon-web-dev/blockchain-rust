@@ -73,7 +73,7 @@ impl UTXOSet {
         &self,
         address: &[u8],
         amount: i32,
-    ) -> (i32, HashMap<String, Vec<i32>>) {
+    ) -> Result<(i32, HashMap<String, Vec<i32>>)> {
         let mut unspent_outputs: HashMap<String, Vec<i32>> = HashMap::new();
         let mut accumulated: i32 = 0;
         let db = sled::open("data/utxos")?;
@@ -94,7 +94,7 @@ impl UTXOSet {
                 }
             }
         }
-        (accumulated, unspent_outputs)
+        Ok((accumulated, unspent_outputs))
     }
 
     pub fn find_UTXO(&self, pub_hash_key: &[u8]) -> Result<TXOutputs> {
