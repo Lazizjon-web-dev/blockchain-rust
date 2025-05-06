@@ -68,4 +68,32 @@ impl UTXOSet {
         }
         Ok(counter)
     }
+
+    pub fn find_spendable_outputs(
+        &self,
+        address: &[u8],
+        amount: i32,
+    ) -> (i32, HashMap<String, Vec<i32>>) {
+        let mut unspent_outputs: HashMap<String, Vec<i32>> = HashMap::new();
+        let mut accumulated: i32 = 0;
+        let db = sled::open("data/utxos")?;
+        for kv in db.iter() {
+            let (key, value) = kv?;
+            let txid = String::from_utf8(key.to_vec())?;
+            let outs: TXOutputs = bincode::deserialize(&value.to_vec())?;
+
+            for out_idx in 0..outs.outputs.len() {
+                if outs.outputs[out_idx].is_locked_with_key(address) && accumulated < amount {
+                    accumulated += outs.outputs[out_idx].value;
+                    match unspent_outputs.get_mut(&txid) {
+                        Some(v) => v.push(out_idx as i32),
+                        None => {
+                            unspent_outputs.insert(txid.clone(), vec![out_idx as i32]);
+                        }
+                    }
+                }
+            }
+        }
+        (accumulated, unspent_outputs)
+    }
 }
