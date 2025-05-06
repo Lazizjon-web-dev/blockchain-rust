@@ -1,6 +1,9 @@
-use crate::block::{Block, TARGET_LEN};
-use crate::error::Result;
-use crate::transaction::{TXOutput, Transaction};
+use crate::{
+    block::{Block, TARGET_LEN},
+    error::Result,
+    transaction::{TXOutput, Transaction},
+    tx::TXOutputs,
+};
 use failure::format_err;
 use log::info;
 use sled::{self, Db};
@@ -106,15 +109,42 @@ impl Blockchain {
         unspend_TXOs
     }
 
-    pub fn find_UTXO(&self, address: &[u8]) -> Vec<TXOutput> {
-        let mut utxos = Vec::<TXOutput>::new();
-        let unspend_TXs = self.find_unspent_transactions(address);
+    pub fn find_UTXO(&self, address: &[u8]) -> HashMap<String, TXOutputs> {
+        let mut utxos: HashMap<String, TXOutputs> = HashMap::new();
+        let mut spend_txos: HashMap<String, Vec<i32>> = HashMap::new();
+        for block in self.iter() {
+            for tx in block.get_transactions() {
+                for index in 0..tx.vout.len() {
+                    if let Some(ids) = spend_txos.get(&tx.id) {
+                        if ids.contains(&(index as i32)) {
+                            continue;
+                        }
+                    }
 
-        for tx in unspend_TXs {
-            for out in &tx.vout {
-                if out.can_be_unlocked_with(&address) {
-                    utxos.push(out.clone());
+                    match utxos.get_mut(&tx.id) {
+                        Some(v) => {
+                            v.outputs.push(tx.vout[index].clone());
+                        }
+                        None => {
+                            utxos.insert(tx.id.clone(), TXOutputs {
+                                outputs: vec![tx.vout[index].clone()],
+                            });
+                        }
+                    }
                 }
+
+                if !tx.is_coinbase() {
+                    for i in &tx.vin {
+                        match spend_txos.get_mut(&i.txid) {
+                            Some(v) => {
+                                v.push(i.vout);
+                            }
+                            None => {
+                                spend_txos.insert(i.txid.clone(), vec![i.vout]);
+                        }
+                    }
+                }
+
             }
         }
         utxos
