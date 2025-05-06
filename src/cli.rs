@@ -1,4 +1,10 @@
-use crate::{blockchain::Blockchain, error::Result, transaction::Transaction, wallet::Wallets};
+use crate::{
+    blockchain::Blockchain,
+    error::Result,
+    transaction::Transaction,
+    uxtoset::UTXOSet,
+    wallet::Wallets,
+};
 use bitcoincash_addr::Address;
 use clap::{Command, arg};
 use std::process::exit;
@@ -64,9 +70,11 @@ impl Cli {
             if let Some(address) = matches.get_one::<String>("ADDRESS") {
                 let pub_key_hash = Address::decode(address).unwrap().body;
                 let bc = Blockchain::new()?;
-                let utxos = bc.find_UTXO(&pub_key_hash);
+                //let utxos = bc.find_UTXO(&pub_key_hash);
+                let utxo_set = UTXOSet { blockchain: bc };
+                let utxos = utxo_set.find_UTXO(&pub_key_hash)?;
                 let mut balance = 0;
-                for out in utxos {
+                for out in utxos.outputs {
                     balance += out.value;
                 }
                 println!("Balance of '{}': {}", address, balance);
