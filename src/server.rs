@@ -106,6 +106,24 @@ impl Server {
         };
         Ok(())
     }
+
+    fn send_data(&self, addr: &str, data: &[u8]) -> Result<()> {
+        if addr == self.node_address {
+            return Ok(());
+        }
+        let mut stream = match TcpStream::connect(addr) {
+            Ok(stream) => stream,
+            Err(_) => {
+                self.remove_node(addr)?;
+                return Ok(());
+            }
+        };
+
+        stream.write(data)?;
+
+        info!("data send successfully to {}", addr);
+        Ok(())
+    }
 }
 
 fn bytes_to_cmd(bytes: &[u8]) -> Result<Message> {
