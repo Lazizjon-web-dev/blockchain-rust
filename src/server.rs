@@ -1,3 +1,12 @@
+use crate::{block::Block, error::Result, transaction::Transaction, utxo_set::UTXOSet};
+use log::info;
+use serde::{Deserialize, Serialize};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::{Arc, Mutex},
+    net::{TcpListener, TcpStream},
+};
+
 const KNOWN_NODE1: &str = "localhost: 3000";
 const CMD_LEN: usize = 12;
 const VERSION: i32 = 1;
@@ -77,5 +86,24 @@ impl Server {
                 mempool: HashMap::new(),
             })),
         })
+    }
+
+    fn handle_connection(&self, mut stream: TcpStream) -> Result<()> {
+        let mut buffer = Vec::new();
+        let count = stream.read_to_end(&mut buffer)?;
+        info!("Accept request: length {}", count);
+
+        let cmd = bytes_to_cmd(&buffer)?;
+
+        match cmd {
+            Message::Address(data) => self.handle_address(data)?,
+            Message::Block(data) => self.handle_block(data)?,
+            Message::Invite(data) => self.handle_invite(data)?,
+            Message::GetBlocks(data) => self.handle_get_blocks(data)?,
+            Message::GetData(data) => self.handle_get_data(data)?,
+            Message::Transaction(data) => self.handle_transaction(data)?,
+            Message::Version(data) => self.handle_version(data)?,
+        };
+        Ok(())
     }
 }
