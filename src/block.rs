@@ -66,7 +66,7 @@ impl Block {
 
     fn hash_transactions(&self) -> Result<Vec<u8>> {
         let mut transactions: Vec<Vec<u8>> = Vec::new();
-        
+
         for tx in self.get_transactions() {
             transactions.push(tx.hash()?.as_bytes().to_owned());
         }
@@ -79,7 +79,7 @@ impl Block {
     fn prepare_hash_data(&self) -> Result<Vec<u8>> {
         let content = (
             self.prev_block_hash.clone(),
-            self.transactions.clone(),
+            self.hash_transactions()?,
             self.timestamp,
             TARGET_LEN,
             self.nonce,
