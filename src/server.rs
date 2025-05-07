@@ -88,6 +88,10 @@ impl Server {
         })
     }
 
+    fn remove_node(&self, addr: &str) {
+        self.inner.lock().unwrap().known_nodes.remove(addr);
+    }
+
     fn handle_connection(&self, mut stream: TcpStream) -> Result<()> {
         let mut buffer = Vec::new();
         let count = stream.read_to_end(&mut buffer)?;
