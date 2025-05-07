@@ -64,6 +64,18 @@ impl Block {
         Ok(())
     }
 
+    fn hash_transactions(&self) -> Result<Vec<u8>> {
+        let mut transactions: Vec<Vec<u8>> = Vec::new();
+        
+        for tx in self.get_transactions() {
+            transactions.push(tx.hash()?.as_bytes().to_owned());
+        }
+
+        let tree = CBMT::<Vec<u8>, MergeTX>::build_merkle_tree(&*transactions);
+
+        Ok(tree.root())
+    }
+
     fn prepare_hash_data(&self) -> Result<Vec<u8>> {
         let content = (
             self.prev_block_hash.clone(),
