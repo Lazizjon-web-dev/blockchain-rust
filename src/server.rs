@@ -119,28 +119,35 @@ fn bytes_to_cmd(bytes: &[u8]) -> Result<Message> {
     }
     info!("cmd: {}", String::from_utf8(&cmd)?);
 
-    if cmd == "addr".as_bytes() {
-        let data: Vec<String> = deserialize(data)?;
-        Ok(Message::Addr(data))
-    } else if cmd == "block".as_bytes() {
-        let data: Blockmsg = deserialize(data)?;
-        Ok(Message::Block(data))
-    } else if cmd == "inv".as_bytes() {
-        let data: Invmsg = deserialize(data)?;
-        Ok(Message::Inv(data))
-    } else if cmd == "getblocks".as_bytes() {
-        let data: GetBlocksmsg = deserialize(data)?;
-        Ok(Message::GetBlock(data))
-    } else if cmd == "getdata".as_bytes() {
-        let data: GetDatamsg = deserialize(data)?;
-        Ok(Message::GetData(data))
-    } else if cmd == "tx".as_bytes() {
-        let data: Txmsg = deserialize(data)?;
-        Ok(Message::Tx(data))
-    } else if cmd == "version".as_bytes() {
-        let data: Versionmsg = deserialize(data)?;
-        Ok(Message::Version(data))
-    } else {
-        Err(format_err!("Unknown command in the server"))
-    }
+    return match cmd {
+        b"addr" => {
+            let data: Vec<String> = deserialize(data)?;
+            Ok(Message::Addr(data))
+        }
+        b"block" => {
+            let data: Blockmsg = deserialize(data)?;
+            Ok(Message::Block(data))
+        }
+        b"inv" => {
+            let data: Invmsg = deserialize(data)?;
+            Ok(Message::Inv(data))
+        }
+        b"getblocks" => {
+            let data: GetBlocksmsg = deserialize(data)?;
+            Ok(Message::GetBlock(data))
+        }
+        b"getdata" => {
+            let data: GetDatamsg = deserialize(data)?;
+            Ok(Message::GetData(data))
+        }
+        b"tx" => {
+            let data: Txmsg = deserialize(data)?;
+            Ok(Message::Tx(data))
+        }
+        b"version" => {
+            let data: Versionmsg = deserialize(data)?;
+            Ok(Message::Version(data))
+        }
+        _ => Err(format_err!("Unknown command in the server"))
+    };
 }
