@@ -4,6 +4,7 @@ use log::info;
 use std::time::SystemTime;
 use crate::{error::Result, transaction::Transaction};
 use serde::{Serialize, Deserialize};
+use merkle_cbt::merkle_tree::{Merge, CBMT};
 
 pub const TARGET_LEN: usize = 4;
 
@@ -83,5 +84,21 @@ impl Block {
         vec1.resize(TARGET_LEN, 0 as u8);
         println!("vec1: {:?}", vec1);
         Ok(&hasher.result_str()[0..TARGET_LEN] == String::from_utf8(vec1)?)
+    }
+}
+
+struct MergeTX {}
+
+impl Merge for MergeTX {
+    type Item = Vec<u8>;
+
+    fn merge(left: &Self::Item, right: &Self::Item) -> Self::Item {
+        let mut hasher = Sha256::new();
+        let mut data: Vec<u8> = left.clone();
+        data.append(&mut right);
+        hasher.input(&data[..]);
+        let mut result: [u8; 32] = [0; 32];
+        hasher.result(&mut result);
+        result.to_vec()
     }
 }
