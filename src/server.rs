@@ -132,6 +132,13 @@ impl Server {
         info!("data send successfully to {}", addr);
         Ok(())
     }
+
+    fn send_addr(&self, addr: &str) -> Result<()> {
+        info!("send addr to {}", addr);
+        let nodes = self.get_known_nodes();
+        let data = bincode::serialize(&(cmd_to_bytes("addr"),nodes))?;
+        self.send_data(addr, &data)
+    }
 }
 
 fn bytes_to_cmd(bytes: &[u8]) -> Result<Message> {
