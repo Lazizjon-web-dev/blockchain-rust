@@ -51,3 +51,14 @@ struct VersionMsg {
     version: i32,
     best_height: i32,
 }
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+enum Message {
+    Address(Vec<String>),
+    Version(VersionMsg),
+    Transaction(TransactionMsg),
+    GetData(GetDataMsg),
+    GetBlocks(GetBlocksMsg),
+    Invite(InviteMsg),
+    Block(BlockMsg),
+}
