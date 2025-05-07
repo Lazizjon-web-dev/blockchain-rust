@@ -3,8 +3,8 @@ use log::info;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::{HashMap, HashSet},
-    sync::{Arc, Mutex},
     net::{TcpListener, TcpStream},
+    sync::{Arc, Mutex},
 };
 
 const KNOWN_NODE1: &str = "localhost: 3000";
@@ -136,10 +136,10 @@ impl Server {
     fn send_addr(&self, addr: &str) -> Result<()> {
         info!("send addr to {}", addr);
         let nodes = self.get_known_nodes();
-        let data = bincode::serialize(&(cmd_to_bytes("addr"),nodes))?;
+        let data = bincode::serialize(&(cmd_to_bytes("addr"), nodes))?;
         self.send_data(addr, &data)
     }
-    
+
     fn get_known_nodes(&self) -> HashSet<String> {
         self.inner.lock().unwrap().known_nodes.clone()
     }
@@ -185,6 +185,14 @@ fn bytes_to_cmd(bytes: &[u8]) -> Result<Message> {
             let data: Versionmsg = deserialize(data)?;
             Ok(Message::Version(data))
         }
-        _ => Err(format_err!("Unknown command in the server"))
+        _ => Err(format_err!("Unknown command in the server")),
     };
+}
+
+fn cmd_to_bytes(cmd: &str) -> [u8; CMD_LEN] {
+    let mut data = [0; CMD_LEN];
+    for (i, d) in cmd.as_bytes().iter().enumerate() {
+        data[i] = *d;
+    }
+    data
 }
