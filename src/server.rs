@@ -89,7 +89,7 @@ impl Server {
     }
 
     fn remove_node(&self, addr: &str) -> Result<()> {
-        let mut inner = self.inner.lock().unwrap();
+        let mut inner = self.inner.lock()?;
         if inner.known_nodes.contains(addr) {
             inner.known_nodes.remove(addr);
         }
