@@ -95,7 +95,7 @@ impl Merge for MergeTX {
     fn merge(left: &Self::Item, right: &Self::Item) -> Self::Item {
         let mut hasher = Sha256::new();
         let mut data: Vec<u8> = left.clone();
-        data.append(&mut right);
+        data.append(&mut right.clone());
         hasher.input(&data[..]);
         let mut result: [u8; 32] = [0; 32];
         hasher.result(&mut result);
