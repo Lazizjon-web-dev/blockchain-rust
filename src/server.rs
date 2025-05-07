@@ -62,3 +62,20 @@ enum Message {
     Invite(InviteMsg),
     Block(BlockMsg),
 }
+
+impl Server {
+    pub fn new(port: &str, miner_address: &str, utxo: UTXOSet) -> Result<Self> {
+        let mut node_set = HashSet::new();
+        node_set.insert(String::from(KNOWN_NODE1));
+        Ok(Self {
+            node_address: String::from(format!("localhost:{}", port)),
+            mining_address: miner_address.to_string(),
+            inner: Arc::new(Mutex::new(ServerInner {
+                known_nodes: node_set,
+                utxo,
+                blocks_in_transit: Vec::new(),
+                mempool: HashMap::new(),
+            })),
+        })
+    }
+}
