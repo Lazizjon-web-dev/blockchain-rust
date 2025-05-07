@@ -139,6 +139,10 @@ impl Server {
         let data = bincode::serialize(&(cmd_to_bytes("addr"),nodes))?;
         self.send_data(addr, &data)
     }
+    
+    fn get_known_nodes(&self) -> HashSet<String> {
+        self.inner.lock().unwrap().known_nodes.clone()
+    }
 }
 
 fn bytes_to_cmd(bytes: &[u8]) -> Result<Message> {
