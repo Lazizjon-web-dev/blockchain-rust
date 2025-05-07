@@ -88,8 +88,12 @@ impl Server {
         })
     }
 
-    fn remove_node(&self, addr: &str) {
-        self.inner.lock().unwrap().known_nodes.remove(addr);
+    fn remove_node(&self, addr: &str) -> Result<()> {
+        let mut inner = self.inner.lock().unwrap();
+        if inner.known_nodes.contains(addr) {
+            inner.known_nodes.remove(addr);
+        }
+        Ok(())
     }
 
     fn handle_connection(&self, mut stream: TcpStream) -> Result<()> {
