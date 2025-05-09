@@ -143,6 +143,20 @@ impl Server {
         self.send_data(addr, &data)
     }
 
+    fn send_inv(&self, addr: &str, kind: &str, items: Vec<String>) -> Result<()> {
+        info!(
+            "send inv message to {} kind: {} data: {:?}",
+            addr, kind, items
+        );
+        let data = InviteMsg {
+            address_from: self.node_address.clone(),
+            kind: kind.to_string(),
+            items,
+        };
+        let data = bincode::serialize(&(cmd_to_bytes("inv"), data))?;
+        self.send_data(addr, &data)
+    }
+
     fn send_addr(&self, addr: &str) -> Result<()> {
         info!("send addr to {}", addr);
         let nodes = self.get_known_nodes();
