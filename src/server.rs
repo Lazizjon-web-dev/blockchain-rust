@@ -167,6 +167,17 @@ impl Server {
         self.send_data(addr, &data)
     }
 
+    fn send_version(&self, addr: &str) -> Result<()> {
+        info!("send version info to: {}", addr);
+        let data = VersionMsg {
+            address_from: self.node_address.clone(),
+            best_height: self.get_best_height(),
+            version: VERSION,
+        };
+        let data = bincode::serialize(&(cmd_to_bytes("version"), data))?;
+        self.send_data(addr, &data)
+    }
+    
     fn send_addr(&self, addr: &str) -> Result<()> {
         info!("send addr to {}", addr);
         let nodes = self.get_known_nodes();
