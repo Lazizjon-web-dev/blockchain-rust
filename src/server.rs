@@ -143,6 +143,29 @@ impl Server {
         Ok(())
     }
 
+    fn send_get_blocks(&self, addr: &str) -> Result<()> {
+        info!("send get blocks message to {}", addr);
+        let data = GetBlocksMsg {
+            address_from: self.node_address.clone(),
+        };
+        let data = bincode::serialize(&(cmd_to_bytes("getblocks"), data))?;
+        self.send_data(addr, &data)
+    }
+
+    fn send_get_data(&self, addr: &str, kind: &str, id: &str) -> Result<()> {
+        info!(
+            "send get data message to {} kind: {} id: {}",
+            addr, kind, id
+        );
+        let data = GetDataMsg {
+            address_from: self.node_address.clone(),
+            kind: kind.to_string(),
+            id: id.to_string(),
+        };
+        let data = bincode::serialize(&(cmd_to_bytes("getdata"), data))?;
+        self.send_data(addr, &data)
+    }
+
     fn send_block(&self, addr: &str, block: &Block) -> Result<()> {
         info!("send block to {} block hash: {}", addr, block.get_hash());
         let data = BlockMsg {
@@ -177,7 +200,7 @@ impl Server {
         let data = bincode::serialize(&(cmd_to_bytes("version"), data))?;
         self.send_data(addr, &data)
     }
-    
+
     fn send_addr(&self, addr: &str) -> Result<()> {
         info!("send addr to {}", addr);
         let nodes = self.get_known_nodes();
