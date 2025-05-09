@@ -88,6 +88,16 @@ impl Server {
         })
     }
 
+    pub fn send_tx(&self, addr: &str, tx: &Transaction) -> Result<()> {
+        info!("send tx to: {}  txid: {}", addr, &tx.id);
+        let data = TransactionMsg {
+            address_from: self.node_address.clone(),
+            transaction: tx.clone(),
+        };
+        let data = bincode::serialize(&(cmd_to_bytes("tx"), data))?;
+        self.send_data(addr, &data)
+    }
+
     fn remove_node(&self, addr: &str) -> Result<()> {
         let mut inner = self.inner.lock()?;
         if inner.known_nodes.contains(addr) {
