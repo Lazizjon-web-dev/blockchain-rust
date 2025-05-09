@@ -211,6 +211,18 @@ impl Server {
     fn get_known_nodes(&self) -> HashSet<String> {
         self.inner.lock().unwrap().known_nodes.clone()
     }
+
+    fn  handle_address(&self, msg: Vec<String>) -> Result<()> {
+        info("recieved address message: {:#?}", msg);
+        for node in msg {
+            self.add_nodes(&node)?;
+        }
+        Ok(())
+    }
+
+    fn add_nodes(&self, addr: &str) {
+        self.inner.lock().unwrap().known_nodes.insert(String::from(addr));
+    }
 }
 
 fn bytes_to_cmd(bytes: &[u8]) -> Result<Message> {
