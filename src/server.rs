@@ -133,6 +133,16 @@ impl Server {
         Ok(())
     }
 
+    fn send_block(&self, addr: &str, block: &Block) -> Result<()> {
+        info!("send block to {} block hash: {}", addr, block.get_hash());
+        let data = BlockMsg {
+            address_from: self.node_address.clone(),
+            block: block.clone(),
+        };
+        let data = bincode::serialize(&(cmd_to_bytes("block"), data))?;
+        self.send_data(addr, &data)
+    }
+
     fn send_addr(&self, addr: &str) -> Result<()> {
         info!("send addr to {}", addr);
         let nodes = self.get_known_nodes();
