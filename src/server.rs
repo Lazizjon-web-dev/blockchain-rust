@@ -236,6 +236,17 @@ impl Server {
         Ok(())
     }
 
+    fn handle_get_blocks(&self, msg: GetBlocksMsg) -> Result<()> {
+        info!("recieved get blocks message: {:#?}", msg);
+        let block_hashes = self.get_block_hashes();
+        self.send_inv(&msg.address_from, "block", block_hashes)?;
+        Ok(())
+    }
+
+    fn get_block_hashes(&self) -> Vec<String> {
+        self.inner.lock().unwrap().utxo.blockchain.get_block_hashes()
+    }
+
     fn add_nodes(&self, addr: &str) {
         self.inner.lock().unwrap().known_nodes.insert(String::from(addr));
     }
