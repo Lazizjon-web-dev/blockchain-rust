@@ -243,6 +243,18 @@ impl Server {
         Ok(())
     }
 
+    fn handle_get_data(&self, msg: GetDataMsg) -> Result<()> {
+        info!("recieved get data message: {:#?}", msg);
+        if msg.kind == "block" {
+            let block = self.get_block(&msg.id)?;
+            self.send_block(&msg.address_from, &block)?;
+        } else if msg.kind == "tx" {
+            let tx = self.get_mempool_tx(&msg.id).unwrap();
+            self.send_tx(&msg.address_from, &tx)?;
+        }
+        Ok(())
+    }
+
     fn get_block_hashes(&self) -> Vec<String> {
         self.inner.lock().unwrap().utxo.blockchain.get_block_hashes()
     }
