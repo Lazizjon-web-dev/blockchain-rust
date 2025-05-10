@@ -220,6 +220,22 @@ impl Server {
         Ok(())
     }
 
+    fn handle_block(&self, msg: BlockMsg) -> Result<()> {
+        info!("recieved block message: {}, {}", msg.address_from, msg.block.get_hash());
+        self.add_block(msg.block)?;
+
+        let mut in_transit = self.get_in_transit();
+        if in_transit.len() > 0 {
+            let block_hash = &in_transit[0];
+            self.send_get_data(&msg.address_from, "block", block_hash)?;
+            in_transit.remove(0);
+            self.replace_in_transit(in_transit);
+        } else {
+            self.utxo_reindex()?;
+        }
+        Ok(())
+    }
+
     fn add_nodes(&self, addr: &str) {
         self.inner.lock().unwrap().known_nodes.insert(String::from(addr));
     }
