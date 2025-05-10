@@ -276,8 +276,16 @@ impl Server {
         Ok(())
     }
 
+    fn get_best_height(&self) -> Result<i32> {
+        self.inner.lock().unwrap().utxo.blockchain.get_best_height()
+    }
+
     fn get_block_hashes(&self) -> Vec<String> {
         self.inner.lock().unwrap().utxo.blockchain.get_block_hashes()
+    }
+
+    fn node_is_known(&self, addr: &str) -> bool {
+        self.inner.lock().unwrap().known_nodes.get(addr).is_some()
     }
 
     fn add_nodes(&self, addr: &str) {
