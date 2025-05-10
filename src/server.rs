@@ -242,6 +242,63 @@ impl Server {
         self.send_inv(&msg.address_from, "block", block_hashes)?;
         Ok(())
     }
+    //TODO: refactor this function to make it shorter and more readable
+    fn handle_transaction(&self, msg: TransactionMsg) -> Result<()> {
+        info!("recieved transaction message: {:#?}", msg);
+        self.insert_mempool(msg.transaction.clone());
+
+        let known_nodes = self.get_known_nodes();
+
+        if self.node_address == KNOWN_NODE1 {
+            for node in known_nodes {
+                if node != self.node_address && node != msg.address_from {
+                    self.send_inv(&node, "tx", vec![msg.transaction.id.clone()])?;
+                }
+            }
+        } else {
+            let mut mempool = self.get_mempool();
+            debug!("Current mempool: {:#?}", &mempool);
+            if mempool.len() >= 1 && !self.mining_address.is_empty() {
+                loop {
+                    let mut txs = Vec::new();
+
+                    for (_, tx) in &mempool {
+                        if self.verify_tx(tx)? {
+                            txs.push(tx.clone());
+                        }
+                    }
+
+                    if txs.is_empty() {
+                        return Ok(());
+                    }
+
+                    let cbtx = Transaction::new_coinbase(self.mining_address.clone(), String::new())?;
+                    txs.push(cbtx);
+
+                    for tx in &txs {
+                        mempool.remove(&tx.id);
+                    }
+
+                    let new_block = self.mine_block(txs)?;
+                    self.utxo_reindex()?;
+
+                    for node in self.get_known_nodes() {
+                        if node != self.node_address {
+                            self.send_inv(&node, "block", vec![new_block.get_hash()])?;
+                        }
+                    }
+
+                    if mempool.len() == 0 {
+                        break;
+                    }
+                }
+
+                self.clear_mempool();
+            }
+        }
+
+        Ok(())
+    }
 
     fn handle_get_data(&self, msg: GetDataMsg) -> Result<()> {
         info!("recieved get data message: {:#?}", msg);
