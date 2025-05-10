@@ -259,6 +259,23 @@ impl Server {
         Ok(())
     }
 
+    fn handle_version(&self, msg: VersionMsg) -> Result<()> {
+        info!("recieved version message: {:#?}", msg);
+        let my_best_height = self.get_best_height();
+        if my_best_height < msg.best_height {
+            self.send_get_blocks(&msg.address_from)?;
+        } else if my_best_height > msg.best_height {
+            self.send_version(&msg.address_from)?;
+        }
+
+        self.send_addr(&msg.address_from)?;
+
+        if !self.node_is_known(&msg.address_from) {
+            self.add_nodes(&msg.address_from);
+        }
+        Ok(())
+    }
+
     fn get_block_hashes(&self) -> Vec<String> {
         self.inner.lock().unwrap().utxo.blockchain.get_block_hashes()
     }
