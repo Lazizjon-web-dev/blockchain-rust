@@ -381,6 +381,10 @@ impl Server {
         let bit = &mut self.inner.lock().unwrap().blocks_in_transit;
         bit.clone_from(&hashs);
     }
+
+    fn get_in_transit(&self) -> Vec<String> {
+        self.inner.lock().unwrap().blocks_in_transit.clone()
+    }
 }
 
 fn bytes_to_cmd(bytes: &[u8]) -> Result<Message> {
