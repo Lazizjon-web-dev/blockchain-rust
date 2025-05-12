@@ -376,6 +376,11 @@ impl Server {
     fn add_nodes(&self, addr: &str) {
         self.inner.lock().unwrap().known_nodes.insert(String::from(addr));
     }
+    
+    fn replace_in_transit(&self, hashs: Vec<String>) {
+        let bit = &mut self.inner.lock().unwrap().blocks_in_transit;
+        bit.clone_from(&hashs);
+    }
 }
 
 fn bytes_to_cmd(bytes: &[u8]) -> Result<Message> {
