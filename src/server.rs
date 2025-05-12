@@ -86,6 +86,39 @@ impl Server {
         })
     }
 
+    pub fn start(&self) -> Result<()> {
+        let server1 = Self {
+            node_address: self.node_address.clone(),
+            mining_address: self.mining_address.clone(),
+            inner: Arc::clone(&self.inner),
+        };
+        info!("Starting server at {}, mining address: {}", self.node_address, &self.mining_address);
+
+        thread::spawn(move || {
+            thread::sleep(Duration::from_millis(1000));
+            if server1.get_best_height()? == -1 {
+                server1.request_blocks()?;
+            } else {
+                server1.send_version(KNOWN_NODE1)?;
+            }
+        });
+
+        let listener = TcpListener::bind(&self.node_address)?;
+        info("Server listen...");
+
+        for stream in listener.incoming() {
+            let stream = stream?;
+            let server1 = Self {
+                node_address: self.node_address.clone(),
+                mining_address: self.mining_address.clone(),
+                inner: Arc::clone(&self.inner),
+            };
+            thread::spawn(move || server1.handle_connection(stream));
+        }
+
+        Ok(())
+    }
+
     pub fn send_tx(&self, addr: &str, tx: &Transaction) -> Result<()> {
         info!("send tx to: {}  txid: {}", addr, &tx.id);
         let data = TransactionMsg {
