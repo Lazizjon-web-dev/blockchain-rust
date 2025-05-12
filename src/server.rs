@@ -300,6 +300,34 @@ impl Server {
         Ok(())
     }
 
+    fn handle_invite(&self, msg: InviteMsg) -> Result<()> {
+        info!("recieved invite message: {:#?}", msg);
+        if msg.kind == "block" {
+            let block_hash = &msg.items[0];
+            self.send_get_data(&msg.address_from, "block", block_hash)?;
+
+            let mut new_in_transit = Vec::new();
+            for b in &msg.items {
+                if b != block_hash {
+                    new_in_transit.push(b.clone());
+                }
+            }
+            self.replace_in_transit(new_in_transit);
+        } else if msg.kind == "tx" {
+            let tx_id = &msg.items[0];
+            match self.get_mempool_tx(tx_id) {
+                Some(tx) => {
+                    if tx.id.is_empty() {
+                        self.send_get_data(&msg.address_from, "tx", tx_id)?;
+                    }
+                }
+                None => self.send_get_data(&msg.address_from, "tx", tx_id)?
+
+            }
+        }
+        Ok(())
+    }
+
     fn handle_get_data(&self, msg: GetDataMsg) -> Result<()> {
         info!("recieved get data message: {:#?}", msg);
         match msg.kind.as_str() {
