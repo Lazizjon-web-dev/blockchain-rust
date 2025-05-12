@@ -392,6 +392,10 @@ impl Server {
             None => None,
         }
     }
+
+    fn get_mempool(&self) -> HashMap<String, Transaction> {
+        self.inner.lock().unwrap().mempool.clone()
+    }
 }
 
 fn bytes_to_cmd(bytes: &[u8]) -> Result<Message> {
