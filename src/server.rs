@@ -385,6 +385,13 @@ impl Server {
     fn get_in_transit(&self) -> Vec<String> {
         self.inner.lock().unwrap().blocks_in_transit.clone()
     }
+
+    fn get_mempool_tx(&self, addr: &str) -> Option<Transaction> {
+        match self.inner.lock().unwrap().mempool.get(addr) {
+            Some(tx) => Some(tx.clone()),
+            None => None,
+        }
+    }
 }
 
 fn bytes_to_cmd(bytes: &[u8]) -> Result<Message> {
