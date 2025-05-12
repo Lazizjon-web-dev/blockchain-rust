@@ -400,6 +400,10 @@ impl Server {
     fn insert_mempool(&self, tx: Transaction) {
         self.inner.lock().unwrap().mempool.insert(tx.id.clone(), tx);
     }
+
+    fn clear_mempool(&self) {
+        self.inner.lock().unwrap().mempool.clear()
+    }
 }
 
 fn bytes_to_cmd(bytes: &[u8]) -> Result<Message> {
