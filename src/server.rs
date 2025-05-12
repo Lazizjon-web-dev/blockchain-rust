@@ -1,10 +1,8 @@
-use crate::{block::Block, error::Result, transaction::Transaction, utxo_set::UTXOSet};
+use crate::{block::Block, error::Result, server, transaction::Transaction, utxo_set::UTXOSet};
 use log::info;
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::{HashMap, HashSet},
-    net::{TcpListener, TcpStream},
-    sync::{Arc, Mutex},
+    collections::{HashMap, HashSet}, net::{TcpListener, TcpStream}, os::unix::thread, sync::{Arc, Mutex}
 };
 
 const KNOWN_NODE1: &str = "localhost: 3000";
@@ -122,6 +120,13 @@ impl Server {
             Message::Transaction(data) => self.handle_transaction(data)?,
             Message::Version(data) => self.handle_version(data)?,
         };
+        Ok(())
+    }
+
+    fn request_blocks(&self) -> Result<()> {
+        for node in self.get_known_nodes() {
+            self.send_get_blocks(&node)?
+        }
         Ok(())
     }
 
