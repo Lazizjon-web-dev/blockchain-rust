@@ -81,6 +81,22 @@ impl Blockchain {
         Ok(new_block)
     }
 
+    pub fn add_block(&mut self, block: Block) -> Result<()> {
+        let data = bincode::serialize(&block)?;
+        if let Some(_) = self.db.get(block.get_hash())? {
+            return Ok(())
+        }
+        self.db.insert(block.get_hash(), data)?;
+
+        let last_height = self.get_best_height()?;
+        if block.get_height() > last_height {
+            self.db.insert("LAST", block.get_hash().as_bytes())?;
+            self.current_hash = block.get_hash();
+            self.db.flush()?;
+        }
+        Ok(())
+    }
+
     pub fn get_best_height(&self) -> Result<usize> {
         let last_hash = if let Some(h) = self.db.get("LAST")? {
                 h
