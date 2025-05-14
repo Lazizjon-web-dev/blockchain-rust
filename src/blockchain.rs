@@ -57,12 +57,26 @@ impl Blockchain {
         Ok(bc)
     }
 
-    pub fn add_block(&mut self, transactions: Vec<Transaction>) -> Result<Block> {
+    pub fn mine_block(&mut self, transactions: Vec<Transaction>) -> Result<Block> {
+        info!("Mining new block");
+
+        for tx in &transactions {
+            if !self.verify_transaction(tx)? {
+                return Err(format_err!("ERROR: Invalid transaction"));
+            }
+        }
+
         let last_hash = self.db.get("LAST")?.unwrap();
-        let last_hash = String::from_utf8(last_hash.to_vec())?;
-        let new_block = Block::new(transactions, last_hash, TARGET_LEN)?;
+
+        let new_block = Block::new(
+            transactions,
+            String::from_utf8(last_hash.to_vec())?,
+            self.get_best_height()? + 1,
+        )?;
         self.db.insert(new_block.get_hash(), bincode::serialize(&new_block)?)?;
         self.db.insert("LAST", new_block.get_hash().as_bytes())?;
+        self.db.flush()?;
+
         self.current_hash = new_block.get_hash();
         Ok(new_block)
     }
