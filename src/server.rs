@@ -2,7 +2,10 @@ use crate::{block::Block, error::Result, server, transaction::Transaction, utxo_
 use log::info;
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::{HashMap, HashSet}, net::{TcpListener, TcpStream}, os::unix::thread, sync::{Arc, Mutex}
+    collections::{HashMap, HashSet},
+    net::{TcpListener, TcpStream},
+    os::unix::thread,
+    sync::{Arc, Mutex},
 };
 
 const KNOWN_NODE1: &str = "localhost: 3000";
@@ -92,7 +95,10 @@ impl Server {
             mining_address: self.mining_address.clone(),
             inner: Arc::clone(&self.inner),
         };
-        info!("Starting server at {}, mining address: {}", self.node_address, &self.mining_address);
+        info!(
+            "Starting server at {}, mining address: {}",
+            self.node_address, &self.mining_address
+        );
 
         thread::spawn(move || {
             thread::sleep(Duration::from_millis(1000));
@@ -250,7 +256,7 @@ impl Server {
         self.inner.lock().unwrap().known_nodes.clone()
     }
 
-    fn  handle_address(&self, msg: Vec<String>) -> Result<()> {
+    fn handle_address(&self, msg: Vec<String>) -> Result<()> {
         info("recieved address message: {:#?}", msg);
         for node in msg {
             self.add_nodes(&node)?;
@@ -259,7 +265,11 @@ impl Server {
     }
 
     fn handle_block(&self, msg: BlockMsg) -> Result<()> {
-        info!("recieved block message: {}, {}", msg.address_from, msg.block.get_hash());
+        info!(
+            "recieved block message: {}, {}",
+            msg.address_from,
+            msg.block.get_hash()
+        );
         self.add_block(msg.block)?;
 
         let mut in_transit = self.get_in_transit();
@@ -310,7 +320,8 @@ impl Server {
                         return Ok(());
                     }
 
-                    let cbtx = Transaction::new_coinbase(self.mining_address.clone(), String::new())?;
+                    let cbtx =
+                        Transaction::new_coinbase(self.mining_address.clone(), String::new())?;
                     txs.push(cbtx);
 
                     for tx in &txs {
@@ -359,8 +370,7 @@ impl Server {
                         self.send_get_data(&msg.address_from, "tx", tx_id)?;
                     }
                 }
-                None => self.send_get_data(&msg.address_from, "tx", tx_id)?
-
+                None => self.send_get_data(&msg.address_from, "tx", tx_id)?,
             }
         }
         Ok(())
@@ -386,6 +396,15 @@ impl Server {
         Ok(())
     }
 
+    fn get_block(&self, block_hash: &str) -> Result<Block> {
+        self.inner
+            .lock()
+            .unwrap()
+            .utxo
+            .blockchain
+            .get_block(block_hash)
+    }
+
     fn handle_version(&self, msg: VersionMsg) -> Result<()> {
         info!("recieved version message: {:#?}", msg);
         let my_best_height = self.get_best_height();
@@ -408,7 +427,12 @@ impl Server {
     }
 
     fn get_block_hashes(&self) -> Vec<String> {
-        self.inner.lock().unwrap().utxo.blockchain.get_block_hashes()
+        self.inner
+            .lock()
+            .unwrap()
+            .utxo
+            .blockchain
+            .get_block_hashes()
     }
 
     fn node_is_known(&self, addr: &str) -> bool {
@@ -416,9 +440,13 @@ impl Server {
     }
 
     fn add_nodes(&self, addr: &str) {
-        self.inner.lock().unwrap().known_nodes.insert(String::from(addr));
+        self.inner
+            .lock()
+            .unwrap()
+            .known_nodes
+            .insert(String::from(addr));
     }
-    
+
     fn replace_in_transit(&self, hashs: Vec<String>) {
         let bit = &mut self.inner.lock().unwrap().blocks_in_transit;
         bit.clone_from(&hashs);
