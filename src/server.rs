@@ -366,6 +366,10 @@ impl Server {
         Ok(())
     }
 
+    fn add_block(&self, block: Block) -> Result<()> {
+        self.inner.lock().unwrap().utxo.blockchain.add_block(block)
+    }
+
     fn handle_get_data(&self, msg: GetDataMsg) -> Result<()> {
         info!("recieved get data message: {:#?}", msg);
         match msg.kind.as_str() {
