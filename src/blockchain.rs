@@ -81,6 +81,12 @@ impl Blockchain {
         Ok(new_block)
     }
 
+    pub  fn get_block(&self, hash: &str) -> Result<Block> {
+        let data = self.db.get(hash.as_bytes())?.unwrap();
+        let block = bincode::deserialize(&data.to_Vec())?;
+        Ok(block)
+    }
+
     pub fn add_block(&mut self, block: Block) -> Result<()> {
         let data = bincode::serialize(&block)?;
         if let Some(_) = self.db.get(block.get_hash())? {
