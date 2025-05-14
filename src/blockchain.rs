@@ -81,6 +81,17 @@ impl Blockchain {
         Ok(new_block)
     }
 
+    pub fn get_best_height(&self) -> Result<usize> {
+        let last_hash = if let Some(h) = self.db.get("LAST")? {
+                h
+            } else {
+                return Ok(-1);
+            };
+        let last_data = self.db.get(last_hash)?.unwrap();
+        let last_block: Block = bincode::deserialize(&last_data.to_vec())?;
+        Ok(last_block.get_height())
+    }
+
     pub fn iter(&self) -> BlockchainIterator {
         BlockchainIterator {
             current_hash: self.current_hash.clone(),
