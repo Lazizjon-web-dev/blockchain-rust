@@ -127,7 +127,7 @@ impl Transaction {
         Ok(())
     }
 
-    pub fn verify(&mut self, prev_TXs: HashMap<String, Transaction>) -> Result<bool> {
+    pub fn verify(&self, prev_TXs: HashMap<String, Transaction>) -> Result<bool> {
         if self.is_coinbase() {
             return Ok(true);
         }
