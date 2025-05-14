@@ -114,6 +114,14 @@ impl Blockchain {
         Ok(last_block.get_height())
     }
 
+    pub fn get_block_hashes(&self) -> Vec<String> {
+        let mut list = Vec::new();
+        for b in self.iter() {
+            list.push(b.get_hash());
+        }
+        list
+    }
+
     pub fn iter(&self) -> BlockchainIterator {
         BlockchainIterator {
             current_hash: self.current_hash.clone(),
