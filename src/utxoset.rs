@@ -1,4 +1,9 @@
-use crate::{blockchain::Blockchain, error::Result, tx::{TXOutput, TXOutputs}};
+use crate::{
+    block::Block,
+    blockchain::Blockchain,
+    error::Result,
+    tx::{TXOutput, TXOutputs},
+};
 use log::info;
 use sled;
 use std::fs::remove_dir_all;
