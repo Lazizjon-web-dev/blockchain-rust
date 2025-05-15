@@ -112,7 +112,7 @@ impl Server {
         });
 
         let listener = TcpListener::bind(&self.node_address)?;
-        info("Server listen...");
+        info!("Server listen...");
 
         for stream in listener.incoming() {
             let stream = stream?;
