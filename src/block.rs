@@ -14,12 +14,12 @@ pub struct Block {
     transactions: Vec<Transaction>,
     prev_block_hash: String,
     hash: String,
-    height: usize,
+    height: i32,
     nonce: i32,
 }
 
 impl Block {
-    pub fn new(data: Vec<Transaction>, prev_block_hash: String, height: usize) -> Result<Self> {
+    pub fn new(data: Vec<Transaction>, prev_block_hash: String, height: i32) -> Result<Self> {
         let timestamp = SystemTime::now()
             .duration_since(SystemTime::UNIX_EPOCH)?
             .as_millis();
@@ -38,6 +38,10 @@ impl Block {
     pub fn new_genesis_block(coinbase: Transaction) -> Self {
         Block::new( vec![coinbase], String::new(), 0)
             .unwrap_or_else(|_| panic!("Failed to create genesis block"))
+    }
+
+    pub fn get_height(&self) -> i32 {
+        self.height
     }
 
     pub fn get_hash(&self) -> String {
