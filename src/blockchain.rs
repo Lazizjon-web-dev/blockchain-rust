@@ -1,7 +1,7 @@
 use crate::{
     block::{Block, TARGET_LEN},
     error::Result,
-    transaction::{TXOutput, Transaction},
+    transaction::Transaction,
     tx::TXOutputs,
 };
 use failure::format_err;
