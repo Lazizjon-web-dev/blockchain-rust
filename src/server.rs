@@ -481,17 +481,16 @@ impl Server {
 }
 
 fn bytes_to_cmd(bytes: &[u8]) -> Result<Message> {
-    let mut cmd = Vec::new();
     let cmd_bytes = &bytes[0..CMD_LEN];
     let data = &bytes[CMD_LEN..];
     for b in cmd_bytes {
-        if 0 as u8 != *b {
-            cmd.push(*b);
+        if 0 as u8 == *b {
+            return Err(format_err!("Command is empty"));
         }
     }
-    info!("cmd: {}", String::from_utf8(&cmd)?);
+    info!("cmd: {}", String::from_utf8(cmd_bytes.to_vec())?);
 
-    return match cmd {
+    return match cmd_bytes {
         b"addr" => {
             let data: Vec<String> = deserialize(data)?;
             Ok(Message::Address(data))
