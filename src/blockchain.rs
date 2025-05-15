@@ -167,7 +167,7 @@ impl Blockchain {
         unspend_TXOs
     }
 
-    pub fn find_UTXO(&self, address: &[u8]) -> HashMap<String, TXOutputs> {
+    pub fn find_UTXO(&self) -> HashMap<String, TXOutputs> {
         let mut utxos: HashMap<String, TXOutputs> = HashMap::new();
         let mut spend_txos: HashMap<String, Vec<i32>> = HashMap::new();
         for block in self.iter() {
