@@ -241,7 +241,7 @@ impl Server {
         info!("send version info to: {}", addr);
         let data = VersionMsg {
             address_from: self.node_address.clone(),
-            best_height: self.get_best_height(),
+            best_height: self.get_best_height()?,
             version: VERSION,
         };
         let data = bincode::serialize(&(cmd_to_bytes("version"), data))?;
