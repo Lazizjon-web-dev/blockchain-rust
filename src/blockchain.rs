@@ -83,7 +83,7 @@ impl Blockchain {
 
     pub  fn get_block(&self, hash: &str) -> Result<Block> {
         let data = self.db.get(hash.as_bytes())?.unwrap();
-        let block = bincode::deserialize(&data.to_Vec())?;
+        let block = bincode::deserialize(&data.to_vec())?;
         Ok(block)
     }
 
@@ -199,6 +199,7 @@ impl Blockchain {
                             }
                             None => {
                                 spend_txos.insert(i.txid.clone(), vec![i.vout]);
+                            }
                         }
                     }
                 }
