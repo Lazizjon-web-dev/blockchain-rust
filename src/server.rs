@@ -36,6 +36,7 @@ struct GetBlocksMsg {
     address_from: String,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
 struct GetDataMsg {
     address_from: String,
     kind: String,
