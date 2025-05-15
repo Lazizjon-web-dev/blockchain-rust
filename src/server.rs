@@ -1,6 +1,7 @@
 use crate::{block::Block, error::Result, server, transaction::Transaction, utxoset::UTXOSet};
 use core::time::Duration;
-use log::info;
+use failure::format_err;
+use log::{info, debug};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::{HashMap, HashSet},
