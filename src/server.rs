@@ -494,30 +494,30 @@ fn bytes_to_cmd(bytes: &[u8]) -> Result<Message> {
     return match cmd {
         b"addr" => {
             let data: Vec<String> = deserialize(data)?;
-            Ok(Message::Addr(data))
+            Ok(Message::Address(data))
         }
         b"block" => {
-            let data: Blockmsg = deserialize(data)?;
+            let data: BlockMsg = deserialize(data)?;
             Ok(Message::Block(data))
         }
         b"inv" => {
-            let data: Invmsg = deserialize(data)?;
-            Ok(Message::Inv(data))
+            let data: InviteMsg = deserialize(data)?;
+            Ok(Message::Invite(data))
         }
         b"getblocks" => {
-            let data: GetBlocksmsg = deserialize(data)?;
-            Ok(Message::GetBlock(data))
+            let data: GetBlocksMsg = deserialize(data)?;
+            Ok(Message::GetBlocks(data))
         }
         b"getdata" => {
-            let data: GetDatamsg = deserialize(data)?;
+            let data: GetDataMsg = deserialize(data)?;
             Ok(Message::GetData(data))
         }
         b"tx" => {
-            let data: Txmsg = deserialize(data)?;
-            Ok(Message::Tx(data))
+            let data: TransactionMsg = deserialize(data)?;
+            Ok(Message::Transaction(data))
         }
         b"version" => {
-            let data: Versionmsg = deserialize(data)?;
+            let data: VersionMsg = deserialize(data)?;
             Ok(Message::Version(data))
         }
         _ => Err(format_err!("Unknown command in the server")),
