@@ -1,4 +1,4 @@
-use crate::{block::Block, error::Result, server, transaction::Transaction, utxo_set::UTXOSet};
+use crate::{block::Block, error::Result, server, transaction::Transaction, utxoset::UTXOSet};
 use log::info;
 use serde::{Deserialize, Serialize};
 use std::{
