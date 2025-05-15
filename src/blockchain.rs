@@ -103,7 +103,7 @@ impl Blockchain {
         Ok(())
     }
 
-    pub fn get_best_height(&self) -> Result<usize> {
+    pub fn get_best_height(&self) -> Result<i32> {
         let last_hash = if let Some(h) = self.db.get("LAST")? {
                 h
             } else {
