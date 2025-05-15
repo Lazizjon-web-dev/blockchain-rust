@@ -14,7 +14,7 @@ impl UTXOSet {
         }
         let db = sled::open("data/utxos")?;
 
-        let utxos = self.blockchain.find_UTXO()?;
+        let utxos = self.blockchain.find_UTXO();
 
         for (txid, outs) in utxos {
             db.insert(txid.as_bytes(), bincode::serialize(&outs)?)?;
