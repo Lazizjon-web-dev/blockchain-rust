@@ -262,7 +262,7 @@ impl Server {
     fn handle_address(&self, msg: Vec<String>) -> Result<()> {
         info!("recieved address message: {:#?}", msg);
         for node in msg {
-            self.add_nodes(&node)?;
+            self.add_nodes(&node);
         }
         Ok(())
     }
