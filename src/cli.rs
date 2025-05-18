@@ -43,7 +43,34 @@ impl Cli {
                     .arg(arg!(<AMOUNT>" 'Amount to send'"))
                     .arg(arg!(-m --mine " 'the from address mine immidiately'")),
             )
+            .subcommand(
+                Command::new("startminer")
+                    .about("Start the miner server")
+                    .arg(arg!(<PORT>"'the port server bind to locally'"))
+                    .arg(arg!(<ADDRESS>"'wallet address'")),
+            )
             .get_matches();
+
+        if let Some(ref matches) = matches.subcommand_matches("startminer") {
+            let port = if let Some(port) = matches.get_one::<String>("PORT") {
+                port
+            } else {
+                println!("PORT not supply!: usage");
+                exit(1)
+            };
+
+            let address = if let Some(address) = matches.get_one::<String>("ADDRESS") {
+                address
+            } else {
+                println!("ADDRESS not supply!: usage");
+                exit(1)
+            };
+
+            let blockchain = Blockchain::new()?;
+            let utxo_set = UTXOSet { blockchain };
+            let server = Server::new(port, address, utxo_set)?;
+            server.start()?;
+        }
 
         if let Some(_) = matches.subcommand_matches("create_wallet") {
             let mut ws = Wallets::new()?;
@@ -137,7 +164,7 @@ fn cmd_send(from: &str, to: &str, amount: i32, mine_now: bool) -> Result<()> {
     let mut utxo_set = UTXOSet { blockchain };
     let wallets = Wallets::new()?;
     let wallet = wallets.get_wallet(from).unwrap();
-    let transaction = Transaction::new_UTXO( wallet, to, amount, &utxo_set)?;
+    let transaction = Transaction::new_UTXO(wallet, to, amount, &utxo_set)?;
     if mine_now {
         let cbtx = Transaction::new_coinbase(from.to_string(), String::from("Reward"))?;
         let new_block = utxo_set.blockchain.mine_block(vec![cbtx, transaction])?;
