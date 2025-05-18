@@ -125,11 +125,7 @@ impl Cli {
                 exit(1)
             };
 
-            if matches.contains_id("mine") {
-                cmd_send(from, to, amount, true)?;
-            } else {
-                cmd_send(from, to, amount, false)?;
-            }
+            cmd_send(from, to, amount, matches.contains_id("mine"))?;
 
             let mut bc = Blockchain::new()?;
             let mut utxo_set = UTXOSet { blockchain: bc };
