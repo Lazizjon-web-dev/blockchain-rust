@@ -1,14 +1,15 @@
 use crate::{block::Block, error::Result, server, transaction::Transaction, utxoset::UTXOSet};
+use bincode::{deserialize, serialize};
 use core::time::Duration;
 use failure::format_err;
-use log::{info, debug};
+use log::{debug, info};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::{HashMap, HashSet},
-    net::{TcpListener, TcpStream},
     io::{Read, Write},
-    thread,
+    net::{TcpListener, TcpStream},
     sync::{Arc, Mutex},
+    thread,
 };
 
 const KNOWN_NODE1: &str = "localhost: 3000";
@@ -135,7 +136,7 @@ impl Server {
             address_from: self.node_address.clone(),
             transaction: tx.clone(),
         };
-        let data = bincode::serialize(&(cmd_to_bytes("tx"), data))?;
+        let data = serialize(&(cmd_to_bytes("tx"), data))?;
         self.send_data(addr, &data)
     }
 
@@ -196,7 +197,7 @@ impl Server {
         let data = GetBlocksMsg {
             address_from: self.node_address.clone(),
         };
-        let data = bincode::serialize(&(cmd_to_bytes("getblocks"), data))?;
+        let data = serialize(&(cmd_to_bytes("getblocks"), data))?;
         self.send_data(addr, &data)
     }
 
@@ -210,7 +211,7 @@ impl Server {
             kind: kind.to_string(),
             id: id.to_string(),
         };
-        let data = bincode::serialize(&(cmd_to_bytes("getdata"), data))?;
+        let data = serialize(&(cmd_to_bytes("getdata"), data))?;
         self.send_data(addr, &data)
     }
 
@@ -220,7 +221,7 @@ impl Server {
             address_from: self.node_address.clone(),
             block: block.clone(),
         };
-        let data = bincode::serialize(&(cmd_to_bytes("block"), data))?;
+        let data = serialize(&(cmd_to_bytes("block"), data))?;
         self.send_data(addr, &data)
     }
 
@@ -234,7 +235,7 @@ impl Server {
             kind: kind.to_string(),
             items,
         };
-        let data = bincode::serialize(&(cmd_to_bytes("inv"), data))?;
+        let data = serialize(&(cmd_to_bytes("inv"), data))?;
         self.send_data(addr, &data)
     }
 
@@ -245,14 +246,14 @@ impl Server {
             best_height: self.get_best_height()?,
             version: VERSION,
         };
-        let data = bincode::serialize(&(cmd_to_bytes("version"), data))?;
+        let data = serialize(&(cmd_to_bytes("version"), data))?;
         self.send_data(addr, &data)
     }
 
     fn send_addr(&self, addr: &str) -> Result<()> {
         info!("send addr to {}", addr);
         let nodes = self.get_known_nodes();
-        let data = bincode::serialize(&(cmd_to_bytes("addr"), nodes))?;
+        let data = serialize(&(cmd_to_bytes("addr"), nodes))?;
         self.send_data(addr, &data)
     }
 
