@@ -130,6 +130,11 @@ impl Server {
         Ok(())
     }
 
+    pub fn send_transaction(tx: &Transaction, utxo_set: UTXOSet) -> Result<()> {
+        let server = Server::new("7000", "", utxo_set)?;
+        server.send_tx(KNOWN_NODE1, tx)
+    }
+
     pub fn send_tx(&self, addr: &str, tx: &Transaction) -> Result<()> {
         info!("send tx to: {}  txid: {}", addr, &tx.id);
         let data = TransactionMsg {
