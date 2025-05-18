@@ -3,7 +3,7 @@ use crate::{
     error::Result,
     tx::{TXInput, TXOutput},
     utxoset::UTXOSet,
-    wallet::{Wallets, hash_pub_key},
+    wallet::*,
 };
 use crypto::{digest::Digest, ed25519, sha2::Sha256};
 use failure::format_err;
