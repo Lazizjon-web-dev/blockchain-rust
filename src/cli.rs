@@ -40,7 +40,8 @@ impl Cli {
                     .about("send coins in the blockchain")
                     .arg(arg!(<FROM>" 'Source wallet address'"))
                     .arg(arg!(<TO>" 'Destination wallet address'"))
-                    .arg(arg!(<AMOUNT>" 'Amount to send'")),
+                    .arg(arg!(<AMOUNT>" 'Amount to send'"))
+                    .arg(arg!(-m --mine " 'the from address mine immidiately'")),
             )
             .get_matches();
 
@@ -123,6 +124,12 @@ impl Cli {
                 println!("amount not supply!: usage");
                 exit(1)
             };
+
+            if matches.contains_id("mine") {
+                cmd_send(from, to, amount, true)?;
+            } else {
+                cmd_send(from, to, amount, false)?;
+            }
 
             let mut bc = Blockchain::new()?;
             let mut utxo_set = UTXOSet { blockchain: bc };
