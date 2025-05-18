@@ -144,3 +144,21 @@ impl Cli {
         Ok(())
     }
 }
+
+fn cmd_send(from: &str, to: &str, amount: i32, mine_now: bool) -> Result<()> {
+    let blockchain = Blockchain::new()?;
+    let mut utxo_set = UTXOSet { blockchain };
+    let wallets = Wallets::new()?;
+    let wallet = wallets.get_wallet(from).unwrap();
+    let transaction = Transaction::new_UTXO(from, to, amount, &utxo_set)?;
+    if mine_now {
+        let cbtx = Transaction::new_coinbase(from.to_string(), String::from("Reward"))?;
+        let new_block = utxo_set.blockchain.mine_block(vec![cbtx, transaction])?;
+        utxo_set.update(&new_block)?;
+    } else {
+        Server::send_transaction(&transaction, utxo_set)?;
+    }
+
+    println!("Success! Transaction sent");
+    Ok(())
+}
