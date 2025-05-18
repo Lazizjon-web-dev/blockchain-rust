@@ -146,7 +146,7 @@ impl Server {
     }
 
     fn remove_node(&self, addr: &str) -> Result<()> {
-        let mut inner = self.inner.lock()?;
+        let mut inner = self.inner.lock().unwrap();
         if inner.known_nodes.contains(addr) {
             inner.known_nodes.remove(addr);
         }
@@ -417,7 +417,7 @@ impl Server {
 
     fn handle_version(&self, msg: VersionMsg) -> Result<()> {
         info!("recieved version message: {:#?}", msg);
-        let my_best_height = self.get_best_height();
+        let my_best_height = self.get_best_height()?;
         if my_best_height < msg.best_height {
             self.send_get_blocks(&msg.address_from)?;
         } else if my_best_height > msg.best_height {
