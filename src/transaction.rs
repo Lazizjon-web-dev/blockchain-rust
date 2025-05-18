@@ -18,17 +18,8 @@ pub struct Transaction {
 }
 
 impl Transaction {
-    pub fn new_UTXO(from: &str, to: &str, amount: i32, bc: &UTXOSet) -> Result<Self> {
+    pub fn new_UTXO(wallet: &Wallet, to: &str, amount: i32, bc: &UTXOSet) -> Result<Self> {
         let mut vin = Vec::new();
-
-        let wallets = Wallets::new()?;
-        let wallet = match wallets.get_wallet(from) {
-            Some(wallet) => wallet,
-            None => return Err(format_err!("From Wallet not found")),
-        };
-        if let None = wallets.get_wallet(&to) {
-            return Err(format_err!("To Wallet not found"));
-        }
 
         let mut pub_key_hash = wallet.public_key.clone();
         hash_pub_key(&mut pub_key_hash);
@@ -58,7 +49,7 @@ impl Transaction {
         let mut vout = vec![TXOutput::new(amount, to.to_string())?];
 
         if acc_v.0 > amount {
-            vout.push(TXOutput::new(acc_v.0 - amount, from.to_string())?)
+            vout.push(TXOutput::new(acc_v.0 - amount, wallet.get_address())?)
         }
 
         let mut tx = Transaction {
