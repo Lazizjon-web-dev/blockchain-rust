@@ -108,9 +108,9 @@ impl Server {
         thread::spawn(move || {
             thread::sleep(Duration::from_millis(1000));
             if server1.get_best_height()? == -1 {
-                server1.request_blocks()?;
+                server1.request_blocks()
             } else {
-                server1.send_version(KNOWN_NODE1)?;
+                server1.send_version(KNOWN_NODE1)
             }
         });
 
