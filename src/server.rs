@@ -19,7 +19,7 @@ const VERSION: i32 = 1;
 pub struct Server {
     node_address: String,
     mining_address: String,
-    inner: Arch<Mutex<ServerInner>>,
+    inner: Arc<Mutex<ServerInner>>,
 }
 
 struct ServerInner {
