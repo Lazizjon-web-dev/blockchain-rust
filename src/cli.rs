@@ -135,7 +135,7 @@ impl Cli {
             let mut utxo_set = UTXOSet { blockchain: bc };
             let tx = Transaction::new_UTXO(from, to, amount, &utxo_set)?;
             let cbtx = Transaction::new_coinbase(from.to_string(), String::from("Reward"))?;
-            let new_block = utxo_set.blockchain.add_block(vec![cbtx, tx])?;
+            let new_block = utxo_set.blockchain.mine_block(vec![cbtx, tx])?;
 
             utxo_set.update(&new_block)?;
             println!("Transaction sent");
