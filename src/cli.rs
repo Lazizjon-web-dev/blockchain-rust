@@ -1,9 +1,5 @@
 use crate::{
-    blockchain::Blockchain,
-    error::Result,
-    transaction::Transaction,
-    utxoset::UTXOSet,
-    wallet::Wallets,
+    blockchain::Blockchain, error::Result, server::Server, transaction::Transaction, utxoset::UTXOSet, wallet::Wallets
 };
 use bitcoincash_addr::Address;
 use clap::{Command, arg};
@@ -28,6 +24,11 @@ impl Cli {
                 Command::new("getbalance")
                     .about("Get the balance of an address")
                     .arg(arg!(<address> "'The address to get the balance of'")),
+            )
+            .subcommand(
+                Command::new("startnode")
+                    .about("Start the node server")
+                    .arg(arg!(<PORT>"'the port server bind to locally'")),
             )
             .subcommand(
                 Command::new("create")
@@ -58,7 +59,7 @@ impl Cli {
                 println!("{}", address);
             }
         }
-        
+
         if let Some(_) = matches.subcommand_matches("reindex") {
             let bc = Blockchain::new()?;
             let utxo_set = UTXOSet { blockchain: bc };
@@ -92,6 +93,15 @@ impl Cli {
             }
         }
 
+        if let Some(ref matches) = matches.subcommand_matches("startnode") {
+            if let Some(port) = matches.get_one::<String>("PORT") {
+                let blockchain = Blockchain::new()?;
+                let utxo_set = UTXOSet { blockchain };
+                let server = Server::new(port, "", utxo_set)?;
+                server.start()?;
+            }
+        }
+
         if let Some(ref matches) = matches.subcommand_matches("send") {
             let from = if let Some(address) = matches.get_one::<String>("FROM") {
                 address
@@ -115,7 +125,7 @@ impl Cli {
             };
 
             let mut bc = Blockchain::new()?;
-            let mut utxo_set = UTXOSet { blockchain: bc };  
+            let mut utxo_set = UTXOSet { blockchain: bc };
             let tx = Transaction::new_UTXO(from, to, amount, &utxo_set)?;
             let cbtx = Transaction::new_coinbase(from.to_string(), String::from("Reward"))?;
             let new_block = utxo_set.blockchain.add_block(vec![cbtx, tx])?;
