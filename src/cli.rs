@@ -91,10 +91,7 @@ impl Cli {
         }
 
         if let Some(_) = matches.subcommand_matches("reindex") {
-            let bc = Blockchain::new()?;
-            let utxo_set = UTXOSet { blockchain: bc };
-            utxo_set.reindex()?;
-            let count = utxo_set.count_transactions()?;
+            let count = cmd_reindex()?;
             println!("Done! There are {} transactions in the UTXO set", count);
         }
 
@@ -184,4 +181,11 @@ fn cmd_create_wallet() -> Result<String> {
     let address = wallets.create_wallet();
     wallets.save_all()?;
     Ok(address)
+}
+
+fn cmd_reindex() -> Result<i32> {
+    let blockchain = Blockchain::new()?;
+    let utxo_set = UTXOSet { blockchain };
+    utxo_set.reindex()?;
+    utxo_set.count_transactions()
 }
