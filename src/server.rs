@@ -1,4 +1,5 @@
-use crate::{block::Block, error::Result, server, transaction::Transaction, utxoset::UTXOSet};
+use super::*;
+use crate::{block::Block, transaction::Transaction, utxoset::UTXOSet};
 use bincode::{deserialize, serialize};
 use core::time::Duration;
 use failure::format_err;
@@ -12,21 +13,15 @@ use std::{
     thread,
 };
 
-const KNOWN_NODE1: &str = "localhost: 3000";
-const CMD_LEN: usize = 12;
-const VERSION: i32 = 1;
-
-pub struct Server {
-    node_address: String,
-    mining_address: String,
-    inner: Arc<Mutex<ServerInner>>,
-}
-
-struct ServerInner {
-    known_nodes: HashSet<String>,
-    utxo: UTXOSet,
-    blocks_in_transit: Vec<String>,
-    mempool: HashMap<String, Transaction>,
+#[derive(Serialize, Deserialize, Debug, Clone)]
+enum Message {
+    Address(Vec<String>),
+    Version(VersionMsg),
+    Transaction(TransactionMsg),
+    GetData(GetDataMsg),
+    GetBlocks(GetBlocksMsg),
+    Invite(InviteMsg),
+    Block(BlockMsg),
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -67,16 +62,22 @@ struct VersionMsg {
     best_height: i32,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-enum Message {
-    Address(Vec<String>),
-    Version(VersionMsg),
-    Transaction(TransactionMsg),
-    GetData(GetDataMsg),
-    GetBlocks(GetBlocksMsg),
-    Invite(InviteMsg),
-    Block(BlockMsg),
+pub struct Server {
+    node_address: String,
+    mining_address: String,
+    inner: Arc<Mutex<ServerInner>>,
 }
+
+struct ServerInner {
+    known_nodes: HashSet<String>,
+    utxo: UTXOSet,
+    blocks_in_transit: Vec<String>,
+    mempool: HashMap<String, Transaction>,
+}
+
+const KNOWN_NODE1: &str = "localhost: 3000";
+const CMD_LEN: usize = 12;
+const VERSION: i32 = 1;
 
 impl Server {
     pub fn new(port: &str, miner_address: &str, utxo: UTXOSet) -> Result<Self> {
