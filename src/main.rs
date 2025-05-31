@@ -8,7 +8,7 @@ mod error;
 mod server;
 mod transaction;
 mod utxoset;
-mod wallet;
+mod wallets;
 
 fn main() -> Result<()> {
     let mut cli = Cli::new()?;

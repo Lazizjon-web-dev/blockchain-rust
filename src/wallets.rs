@@ -1,4 +1,5 @@
-use crate::error::Result;
+use super::*;
+use bincode::{deserialize, serialize};
 use bitcoincash_addr::{Address, HashType, Scheme};
 use crypto::{digest::Digest, ed25519, ripemd160::Ripemd160, sha2::Sha256};
 use log::info;
@@ -26,7 +27,7 @@ impl Wallet {
     }
 
     fn get_address(&self) -> String {
-        let mut pub_hash = self.public_key.clone();
+        let mut pub_hash: Vec<u8> = self.public_key.clone();
         hash_pub_key(&mut pub_hash);
         let address = Address {
             body: pub_hash,
@@ -63,7 +64,7 @@ impl Wallets {
         for item in db.into_iter() {
             let i = item?;
             let address = String::from_utf8(i.0.to_vec())?;
-            let wallet = bincode::deserialize(&i.1.to_vec())?;
+            let wallet = deserialize(&i.1.to_vec())?;
             wlt.wallets.insert(address, wallet);
         }
         drop(db);
@@ -74,12 +75,12 @@ impl Wallets {
         let wallet = Wallet::new();
         let address = wallet.get_address();
         self.wallets.insert(address.clone(), wallet);
-        info!("Create wallet: {}", address);
+        info!("create wallet: {}", address);
         address
     }
 
     pub fn get_all_addresses(&self) -> Vec<String> {
-        let mut addresses: Vec<String> = Vec::new();
+        let mut addresses = Vec::new();
         for (address, _) in &self.wallets {
             addresses.push(address.clone());
         }
@@ -94,7 +95,7 @@ impl Wallets {
         let db = sled::open("data/wallets")?;
 
         for (address, wallet) in &self.wallets {
-            let data = bincode::serialize(wallet)?;
+            let data = serialize(wallet)?;
             db.insert(address, data)?;
         }
 
