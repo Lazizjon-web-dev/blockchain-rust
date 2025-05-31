@@ -1,9 +1,6 @@
-use crate::{
-    block::{Block, TARGET_LEN},
-    error::Result,
-    transaction::Transaction,
-    tx::TXOutputs,
-};
+use super::*;
+use crate::{block::*, transaction::*, tx::TXOutputs};
+use bincode::{deserialize, serialize};
 use failure::format_err;
 use log::info;
 use sled::{self, Db};
@@ -11,12 +8,12 @@ use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct Blockchain {
-    current_hash: String,
+    tip: String,
     db: sled::Db,
 }
 
 pub struct BlockchainIterator<'a> {
-    current_hash: String,
+    tip: String,
     bc: &'a Blockchain,
 }
 
@@ -31,10 +28,7 @@ impl Blockchain {
         info!("Found block database");
 
         let last_hash = String::from_utf8(hash.to_vec())?;
-        Ok(Blockchain {
-            current_hash: last_hash,
-            db,
-        })
+        Ok(Blockchain { tip: last_hash, db })
     }
 
     pub fn create_blockchain(address: String) -> Result<Self> {
@@ -46,10 +40,10 @@ impl Blockchain {
         info!("Creating new block database");
         let cbtx = Transaction::new_coinbase(address, String::from("GENESIS_COINBASE"))?;
         let genesis: Block = Block::new_genesis_block(cbtx);
-        db.insert(genesis.get_hash(), bincode::serialize(&genesis)?)?;
+        db.insert(genesis.get_hash(), serialize(&genesis)?)?;
         db.insert("LAST", genesis.get_hash().as_bytes())?;
         let bc = Blockchain {
-            current_hash: genesis.get_hash(),
+            tip: genesis.get_hash(),
             db: db.clone(),
         };
         bc.db.flush()?;
@@ -73,31 +67,32 @@ impl Blockchain {
             String::from_utf8(last_hash.to_vec())?,
             self.get_best_height()? + 1,
         )?;
-        self.db.insert(new_block.get_hash(), bincode::serialize(&new_block)?)?;
+        self.db
+            .insert(new_block.get_hash(), serialize(&new_block)?)?;
         self.db.insert("LAST", new_block.get_hash().as_bytes())?;
         self.db.flush()?;
 
-        self.current_hash = new_block.get_hash();
+        self.tip = new_block.get_hash();
         Ok(new_block)
     }
 
-    pub  fn get_block(&self, hash: &str) -> Result<Block> {
+    pub fn get_block(&self, hash: &str) -> Result<Block> {
         let data = self.db.get(hash.as_bytes())?.unwrap();
-        let block = bincode::deserialize(&data.to_vec())?;
+        let block = deserialize(&data.to_vec())?;
         Ok(block)
     }
 
     pub fn add_block(&mut self, block: Block) -> Result<()> {
-        let data = bincode::serialize(&block)?;
+        let data = serialize(&block)?;
         if let Some(_) = self.db.get(block.get_hash())? {
-            return Ok(())
+            return Ok(());
         }
         self.db.insert(block.get_hash(), data)?;
 
         let last_height = self.get_best_height()?;
         if block.get_height() > last_height {
             self.db.insert("LAST", block.get_hash().as_bytes())?;
-            self.current_hash = block.get_hash();
+            self.tip = block.get_hash();
             self.db.flush()?;
         }
         Ok(())
@@ -105,12 +100,12 @@ impl Blockchain {
 
     pub fn get_best_height(&self) -> Result<i32> {
         let last_hash = if let Some(h) = self.db.get("LAST")? {
-                h
-            } else {
-                return Ok(-1);
-            };
+            h
+        } else {
+            return Ok(-1);
+        };
         let last_data = self.db.get(last_hash)?.unwrap();
-        let last_block: Block = bincode::deserialize(&last_data.to_vec())?;
+        let last_block: Block = deserialize(&last_data.to_vec())?;
         Ok(last_block.get_height())
     }
 
@@ -124,7 +119,7 @@ impl Blockchain {
 
     pub fn iter(&self) -> BlockchainIterator {
         BlockchainIterator {
-            current_hash: self.current_hash.clone(),
+            tip: self.tip.clone(),
             bc: &self,
         }
     }
@@ -184,9 +179,12 @@ impl Blockchain {
                             v.outputs.push(tx.vout[index].clone());
                         }
                         None => {
-                            utxos.insert(tx.id.clone(), TXOutputs {
-                                outputs: vec![tx.vout[index].clone()],
-                            });
+                            utxos.insert(
+                                tx.id.clone(),
+                                TXOutputs {
+                                    outputs: vec![tx.vout[index].clone()],
+                                },
+                            );
                         }
                     }
                 }
@@ -203,7 +201,6 @@ impl Blockchain {
                         }
                     }
                 }
-
             }
         }
         utxos
@@ -246,11 +243,11 @@ impl<'a> Iterator for BlockchainIterator<'a> {
     type Item = Block;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if let Ok(encode_block) = self.bc.db.get(&self.current_hash) {
+        if let Ok(encode_block) = self.bc.db.get(&self.tip) {
             return match encode_block {
                 Some(encode_block) => {
-                    if let Ok(block) = bincode::deserialize::<Block>(&encode_block) {
-                        self.current_hash = block.get_prev_hash();
+                    if let Ok(block) = deserialize::<Block>(&encode_block) {
+                        self.tip = block.get_prev_hash();
                         Some(block)
                     } else {
                         None
@@ -260,22 +257,5 @@ impl<'a> Iterator for BlockchainIterator<'a> {
             };
         }
         None
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_add_block() {
-        let mut bc = Blockchain::new().unwrap();
-        // bc.add_block("data 1".to_string()).unwrap();
-        // bc.add_block("data 2".to_string()).unwrap();
-        // bc.add_block("data 3".to_string()).unwrap();
-
-        for item in bc.iter() {
-            println!("item {:?}", item);
-        }
     }
 }
