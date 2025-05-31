@@ -137,6 +137,10 @@ impl Cli {
             cmd_send(from, to, amount, matches.contains_id("mine"))?;
         }
 
+        if let Some(_) = matches.subcommand_matches("print") {
+            cmd_print_chain()?;
+        }
+
         Ok(())
     }
 }
@@ -204,4 +208,12 @@ fn cmd_get_balance(address: &str) -> Result<i32> {
         balance += output.value;
     }
     Ok(balance)
+}
+
+fn cmd_print_chain() -> Result<()> {
+    let blockchain = Blockchain::new()?;
+    for block in blockchain.iter() {
+        println!("{:#?}", block);
+    }
+    Ok(())
 }
