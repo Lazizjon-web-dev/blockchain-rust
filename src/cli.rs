@@ -92,11 +92,7 @@ impl Cli {
 
         if let Some(ref matches) = matches.subcommand_matches("create") {
             if let Some(address) = matches.get_one::<String>("ADDRESS") {
-                let address = String::from(address);
-                let bc = Blockchain::create_blockchain(address.clone())?;
-                let utxo_set = UTXOSet { blockchain: bc };
-                utxo_set.reindex()?;
-                println!("Create blockchain");
+                cmd_create_blockchain(address);
             }
         }
 
@@ -192,5 +188,15 @@ fn cmd_list_addresses() -> Result<()> {
     for address in addresses {
         println!("{}", address);
     }
+    Ok(())
+}
+
+fn cmd_create_blockchain(address: &str) -> Result<()> {
+    let address = String::from(address);
+    let blockchain = Blockchain::create_blockchain(address)?;
+
+    let utxo_set = UTXOSet { blockchain };
+    utxo_set.reindex()?;
+    println!("create blockchain");
     Ok(())
 }
