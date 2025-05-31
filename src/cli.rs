@@ -82,12 +82,7 @@ impl Cli {
         }
 
         if let Some(_) = matches.subcommand_matches("list_addresses") {
-            let ws = Wallets::new()?;
-            let addresses = ws.get_all_addresses();
-            println!("Addresses:");
-            for address in addresses {
-                println!("{}", address);
-            }
+            cmd_list_addresses()?;
         }
 
         if let Some(_) = matches.subcommand_matches("reindex") {
@@ -188,4 +183,14 @@ fn cmd_reindex() -> Result<i32> {
     let utxo_set = UTXOSet { blockchain };
     utxo_set.reindex()?;
     utxo_set.count_transactions()
+}
+
+fn cmd_list_addresses() -> Result<()> {
+    let wallets = Wallets::new()?;
+    let addresses = wallets.get_all_addresses();
+    println!("addresses: ");
+    for address in addresses {
+        println!("{}", address);
+    }
+    Ok(())
 }
