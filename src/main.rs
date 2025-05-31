@@ -1,10 +1,14 @@
 use cli::Cli;
 use error::Result;
 
-mod error;
-mod blockchain;
 mod block;
+mod blockchain;
 mod cli;
+mod error;
+mod server;
+mod transaction;
+mod utxoset;
+mod wallet;
 
 fn main() -> Result<()> {
     let mut cli = Cli::new()?;

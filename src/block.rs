@@ -1,10 +1,10 @@
+use crate::{error::Result, transaction::Transaction};
 use crypto::digest::Digest;
 use crypto::sha2::Sha256;
 use log::info;
-use std::time::SystemTime;
-use crate::{error::Result, transaction::Transaction};
-use serde::{Serialize, Deserialize};
 use merkle_cbt::merkle_tree::{Merge, CBMT};
+use serde::{Deserialize, Serialize};
+use std::time::SystemTime;
 
 pub const TARGET_LEN: usize = 4;
 
@@ -36,7 +36,7 @@ impl Block {
     }
 
     pub fn new_genesis_block(coinbase: Transaction) -> Self {
-        Block::new( vec![coinbase], String::new(), 0)
+        Block::new(vec![coinbase], String::new(), 0)
             .unwrap_or_else(|_| panic!("Failed to create genesis block"))
     }
 
@@ -71,11 +71,11 @@ impl Block {
     fn hash_transactions(&self) -> Result<Vec<u8>> {
         let mut transactions: Vec<Vec<u8>> = Vec::new();
 
-        for tx in self.get_transactions() {
+        for tx in &self.transactions {
             transactions.push(tx.hash()?.as_bytes().to_owned());
         }
 
-        let tree = CBMT::<Vec<u8>, MergeTX>::build_merkle_tree(&*transactions);
+        let tree = CBMT::<Vec<u8>, MergeVu8>::build_merkle_tree(&transactions);
 
         Ok(tree.root())
     }
@@ -103,9 +103,9 @@ impl Block {
     }
 }
 
-struct MergeTX {}
+struct MergeVu8 {}
 
-impl Merge for MergeTX {
+impl Merge for MergeVu8 {
     type Item = Vec<u8>;
 
     fn merge(left: &Self::Item, right: &Self::Item) -> Self::Item {
