@@ -6,7 +6,7 @@ use merkle_cbt::merkle_tree::{Merge, CBMT};
 use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
 
-pub const TARGET_LEN: usize = 4;
+pub const TARGET_HEXS: usize = 4;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Block {
@@ -85,7 +85,7 @@ impl Block {
             self.prev_block_hash.clone(),
             self.hash_transactions()?,
             self.timestamp,
-            TARGET_LEN,
+            TARGET_HEXS,
             self.nonce,
         );
         let mut bytes: Vec<u8> = bincode::serialize(&content)?;
@@ -97,9 +97,9 @@ impl Block {
         let mut hasher = Sha256::new();
         hasher.input(&data[..]);
         let mut vec1: Vec<u8> = vec![];
-        vec1.resize(TARGET_LEN, 0 as u8);
+        vec1.resize(TARGET_HEXS, 0 as u8);
         println!("vec1: {:?}", vec1);
-        Ok(&hasher.result_str()[0..TARGET_LEN] == String::from_utf8(vec1)?)
+        Ok(&hasher.result_str()[0..TARGET_HEXS] == String::from_utf8(vec1)?)
     }
 }
 
