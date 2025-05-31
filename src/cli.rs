@@ -1,8 +1,13 @@
 use crate::{
-    blockchain::Blockchain, error::Result, server::Server, transaction::Transaction, utxoset::UTXOSet, wallet::Wallets
+    blockchain::Blockchain,
+    error::Result,
+    server::Server,
+    transaction::Transaction,
+    utxoset::UTXOSet,
+    wallets::{Wallet, Wallets},
 };
 use bitcoincash_addr::Address;
-use clap::{Command, arg};
+use clap::{arg, Command};
 use std::process::exit;
 
 pub struct Cli {}
@@ -73,10 +78,7 @@ impl Cli {
         }
 
         if let Some(_) = matches.subcommand_matches("create_wallet") {
-            let mut ws = Wallets::new()?;
-            let address = ws.create_wallet();
-            ws.save_all()?;
-            println!("success: address {}", address);
+            println!("address: {}", cmd_create_wallet()?);
         }
 
         if let Some(_) = matches.subcommand_matches("list_addresses") {
@@ -175,4 +177,11 @@ fn cmd_send(from: &str, to: &str, amount: i32, mine_now: bool) -> Result<()> {
 
     println!("Success! Transaction sent");
     Ok(())
+}
+
+fn cmd_create_wallet() -> Result<String> {
+    let mut wallets = Wallets::new()?;
+    let address = wallets.create_wallet();
+    wallets.save_all()?;
+    Ok(address)
 }
