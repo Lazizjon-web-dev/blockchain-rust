@@ -98,16 +98,8 @@ impl Cli {
 
         if let Some(ref matches) = matches.subcommand_matches("getbalance") {
             if let Some(address) = matches.get_one::<String>("ADDRESS") {
-                let pub_key_hash = Address::decode(address).unwrap().body;
-                let bc = Blockchain::new()?;
-                //let utxos = bc.find_UTXO(&pub_key_hash);
-                let utxo_set = UTXOSet { blockchain: bc };
-                let utxos = utxo_set.find_UTXO(&pub_key_hash)?;
-                let mut balance = 0;
-                for out in utxos.outputs {
-                    balance += out.value;
-                }
-                println!("Balance of '{}': {}", address, balance);
+                let balance = cmd_get_balance(address)?;
+                println!("Balance: {}\n", balance);
             }
         }
 
@@ -199,4 +191,17 @@ fn cmd_create_blockchain(address: &str) -> Result<()> {
     utxo_set.reindex()?;
     println!("create blockchain");
     Ok(())
+}
+
+fn cmd_get_balance(address: &str) -> Result<i32> {
+    let pub_key_hash = Address::decode(address).unwrap().body;
+    let blockchain = Blockchain::new()?;
+    let utxo_set = UTXOSet { blockchain };
+    let utxos = utxo_set.find_UTXO(&pub_key_hash)?;
+
+    let mut balance = 0;
+    for output in utxos.outputs {
+        balance += output.value;
+    }
+    Ok(balance)
 }
