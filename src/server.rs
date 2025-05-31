@@ -537,3 +537,31 @@ fn cmd_to_bytes(cmd: &str) -> [u8; CMD_LEN] {
     }
     data
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::blockchain::*;
+    use crate::wallets::*;
+
+    #[test]
+    fn test_cmd() {
+        let mut ws = Wallets::new().unwrap();
+        let wa1 = ws.create_wallet();
+        let bc = Blockchain::create_blockchain(wa1).unwrap();
+        let utxo_set = UTXOSet { blockchain: bc };
+        let server = Server::new("7878", "localhost:3001", utxo_set).unwrap();
+
+        let vmsg = Versionmsg {
+            addr_from: server.node_address.clone(),
+            best_height: server.get_best_height().unwrap(),
+            version: VERSION,
+        };
+        let data = serialize(&(cmd_to_bytes("version"), vmsg.clone())).unwrap();
+        if let Message::Version(v) = bytes_to_cmd(&data).unwrap() {
+            assert_eq!(v, vmsg);
+        } else {
+            panic!("wrong!");
+        }
+    }
+}
