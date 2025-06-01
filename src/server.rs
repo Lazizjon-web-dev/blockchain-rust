@@ -450,6 +450,15 @@ impl Server {
         self.inner.lock().unwrap().known_nodes.get(addr).is_some()
     }
 
+    fn verify_tx(&self, tx: &Transaction) -> Result<bool> {
+        self.inner
+            .lock()
+            .unwrap()
+            .utxo
+            .blockchain
+            .verify_transaction(tx)
+    }
+
     fn add_nodes(&self, addr: &str) {
         self.inner
             .lock()
