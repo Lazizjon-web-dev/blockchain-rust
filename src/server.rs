@@ -459,6 +459,14 @@ impl Server {
             .verify_transaction(tx)
     }
 
+    fn mine_block(&self, txs: Vec<Transaction>) -> Result<Block> {
+        self.inner.lock().unwrap().utxo.blockchain.mine_block(txs)
+    }
+
+    fn utxo_reindex(&self) -> Result<()> {
+        self.inner.lock().unwrap().utxo.reindex()
+    }
+
     fn add_nodes(&self, addr: &str) {
         self.inner
             .lock()
