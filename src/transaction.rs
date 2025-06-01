@@ -91,7 +91,7 @@ impl Transaction {
     }
 
     /// NewCoinbaseTX creates a new coinbase transaction
-    pub fn new_coinbase(to: String, mut data: String) -> Result<Transaction> {
+    pub fn new_coinbase(to: String, mut data: String) -> Result<Self> {
         info!("new coinbase Transaction to: {}", to);
         let mut key: [u8; 32] = [0; 32];
         if data.is_empty() {
@@ -184,8 +184,9 @@ impl Transaction {
     }
 
     pub fn hash(&mut self) -> Result<String> {
-        self.id = String::new();
-        let data = serialize(self)?;
+        let mut copy = self.clone();
+        copy.id = String::new();
+        let data = serialize(&copy)?;
         let mut hasher = Sha256::new();
         hasher.input(&data[..]);
         Ok(hasher.result_str())
