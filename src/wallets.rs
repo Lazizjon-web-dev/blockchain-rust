@@ -26,7 +26,7 @@ impl Wallet {
         }
     }
 
-    fn get_address(&self) -> String {
+    pub fn get_address(&self) -> String {
         let mut pub_hash: Vec<u8> = self.public_key.clone();
         hash_pub_key(&mut pub_hash);
         let address = Address {
@@ -102,5 +102,55 @@ impl Wallets {
         db.flush()?;
         drop(db);
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_create_wallet_and_hash() {
+        let w1 = Wallet::new();
+        let w2 = Wallet::new();
+        assert_ne!(w1, w2);
+        assert_ne!(w1.get_address(), w2.get_address());
+
+        let mut p2 = w2.public_key.clone();
+        hash_pub_key(&mut p2);
+        assert_eq!(p2.len(), 20);
+        let pub_key_hash = Address::decode(&w2.get_address()).unwrap().body;
+        assert_eq!(pub_key_hash, p2);
+    }
+
+    #[test]
+    fn test_wallets() {
+        let mut ws = Wallets::new().unwrap();
+        let wa1 = ws.create_wallet();
+        let w1 = ws.get_wallet(&wa1).unwrap().clone();
+        ws.save_all().unwrap();
+
+        let ws2 = Wallets::new().unwrap();
+        let w2 = ws2.get_wallet(&wa1).unwrap();
+        assert_eq!(&w1, w2);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_wallets_not_exist() {
+        let w3 = Wallet::new();
+        let ws2 = Wallets::new().unwrap();
+        ws2.get_wallet(&w3.get_address()).unwrap();
+    }
+
+    #[test]
+    fn test_signature() {
+        let w = Wallet::new();
+        let signature = ed25519::signature("test".as_bytes(), &w.secret_key);
+        assert!(ed25519::verify(
+            "test".as_bytes(),
+            &w.public_key,
+            &signature
+        ));
     }
 }
