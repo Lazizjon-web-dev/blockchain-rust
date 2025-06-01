@@ -11,7 +11,7 @@ pub struct UTXOSet {
 
 impl UTXOSet {
     pub fn reindex(&self) -> Result<()> {
-        if let Err(_) = remove_dir_all("data/utxos") {
+        if remove_dir_all("data/utxos").is_err() {
             info!("not exists any utxos to delete")
         }
         let db = open("data/utxos")?;
@@ -85,7 +85,7 @@ impl UTXOSet {
         for kv in db.iter() {
             let (key, value) = kv?;
             let txid = String::from_utf8(key.to_vec())?;
-            let outs: TXOutputs = deserialize(&value.to_vec())?;
+            let outs: TXOutputs = deserialize(&value)?;
 
             for out_idx in 0..outs.outputs.len() {
                 if outs.outputs[out_idx].is_locked_with_key(pub_hash_key) && accumulated < amount {
@@ -109,7 +109,7 @@ impl UTXOSet {
         let db = open("data/utxos")?;
         for kv in db.iter() {
             let (_, value) = kv?;
-            let outs: TXOutputs = deserialize(&value.to_vec())?;
+            let outs: TXOutputs = deserialize(&value)?;
 
             for out in outs.outputs {
                 if out.is_locked_with_key(pub_hash_key) {

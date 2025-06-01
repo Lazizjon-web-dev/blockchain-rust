@@ -1,10 +1,6 @@
 use crate::{
-    blockchain::Blockchain,
-    error::Result,
-    server::Server,
-    transaction::Transaction,
-    utxoset::UTXOSet,
-    wallets::{Wallet, Wallets},
+    blockchain::Blockchain, error::Result, server::Server, transaction::Transaction,
+    utxoset::UTXOSet, wallets::Wallets,
 };
 use bitcoincash_addr::Address;
 use clap::{arg, Command};
@@ -77,29 +73,29 @@ impl Cli {
             server.start()?;
         }
 
-        if let Some(_) = matches.subcommand_matches("create_wallet") {
+        if matches.subcommand_matches("create_wallet").is_some() {
             println!("address: {}", cmd_create_wallet()?);
         }
 
-        if let Some(_) = matches.subcommand_matches("list_addresses") {
+        if matches.subcommand_matches("list_addresses").is_some() {
             cmd_list_addresses()?;
         }
 
-        if let Some(_) = matches.subcommand_matches("reindex") {
+        if matches.subcommand_matches("reindex").is_some() {
             let count = cmd_reindex()?;
-            println!("Done! There are {} transactions in the UTXO set", count);
+            println!("Done! There are {count} transactions in the UTXO set");
         }
 
         if let Some(ref matches) = matches.subcommand_matches("create") {
             if let Some(address) = matches.get_one::<String>("ADDRESS") {
-                cmd_create_blockchain(address);
+                cmd_create_blockchain(address)?;
             }
         }
 
         if let Some(ref matches) = matches.subcommand_matches("getbalance") {
             if let Some(address) = matches.get_one::<String>("ADDRESS") {
                 let balance = cmd_get_balance(address)?;
-                println!("Balance: {}\n", balance);
+                println!("Balance: {balance}\n");
             }
         }
 
@@ -137,7 +133,7 @@ impl Cli {
             cmd_send(from, to, amount, matches.contains_id("mine"))?;
         }
 
-        if let Some(_) = matches.subcommand_matches("print") {
+        if matches.subcommand_matches("print").is_some() {
             cmd_print_chain()?;
         }
 
@@ -182,7 +178,7 @@ fn cmd_list_addresses() -> Result<()> {
     let addresses = wallets.get_all_addresses();
     println!("addresses: ");
     for address in addresses {
-        println!("{}", address);
+        println!("{address}");
     }
     Ok(())
 }

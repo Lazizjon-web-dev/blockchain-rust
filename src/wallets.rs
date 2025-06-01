@@ -64,7 +64,7 @@ impl Wallets {
         for item in db.into_iter() {
             let i = item?;
             let address = String::from_utf8(i.0.to_vec())?;
-            let wallet = deserialize(&i.1.to_vec())?;
+            let wallet = deserialize(&i.1)?;
             wlt.wallets.insert(address, wallet);
         }
         drop(db);
@@ -75,13 +75,13 @@ impl Wallets {
         let wallet = Wallet::new();
         let address = wallet.get_address();
         self.wallets.insert(address.clone(), wallet);
-        info!("create wallet: {}", address);
+        info!("create wallet: {address}");
         address
     }
 
     pub fn get_all_addresses(&self) -> Vec<String> {
         let mut addresses = Vec::new();
-        for (address, _) in &self.wallets {
+        for address in self.wallets.keys() {
             addresses.push(address.clone());
         }
         addresses

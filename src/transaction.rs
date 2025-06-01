@@ -92,11 +92,11 @@ impl Transaction {
 
     /// NewCoinbaseTX creates a new coinbase transaction
     pub fn new_coinbase(to: String, mut data: String) -> Result<Self> {
-        info!("new coinbase Transaction to: {}", to);
+        info!("new coinbase Transaction to: {to}");
         let mut key: [u8; 32] = [0; 32];
         if data.is_empty() {
             thread_rng().fill_bytes(&mut key);
-            data = format!("Reward to '{}'", to);
+            data = format!("Reward to '{to}'",);
         }
         let mut pub_key = Vec::from(data.as_bytes());
         pub_key.append(&mut Vec::from(key));
@@ -172,7 +172,7 @@ impl Transaction {
             tx_copy.id = tx_copy.hash()?;
             tx_copy.vin[in_id].pub_key.clear();
             if !ed25519::verify(
-                &tx_copy.id.as_bytes(),
+                tx_copy.id.as_bytes(),
                 &self.vin[in_id].pub_key,
                 &self.vin[in_id].pub_key,
             ) {
@@ -199,7 +199,7 @@ impl Transaction {
         for v in &self.vin {
             vin.push(TXInput {
                 txid: v.txid.clone(),
-                vout: v.vout.clone(),
+                vout: v.vout,
                 signature: Vec::new(),
                 pub_key: Vec::new(),
             });
@@ -220,6 +220,15 @@ impl Transaction {
     }
 }
 
+impl TXInput {
+    /// CanUnlockOutputWith checks whether the address initiated the transaction
+    pub fn can_unlock_output_with(&self, unlocking_data: &[u8]) -> bool {
+        let mut pub_hash_key = self.pub_key.clone();
+        hash_pub_key(&mut pub_hash_key);
+        pub_hash_key == unlocking_data
+    }
+}
+
 impl TXOutput {
     /// IsLockedWithKey checks if the output can be used by the owner of the pubkey
     pub fn is_locked_with_key(&self, pub_key_hash: &[u8]) -> bool {
@@ -228,7 +237,7 @@ impl TXOutput {
     /// Lock signs the output
     fn lock(&mut self, address: &str) -> Result<()> {
         let pub_key_hash = Address::decode(address).unwrap().body;
-        debug!("lock: {}", address);
+        debug!("lock: {address}");
         self.pub_key_hash = pub_key_hash;
         Ok(())
     }
