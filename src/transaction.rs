@@ -5,6 +5,7 @@ use bitcoincash_addr::Address;
 use crypto::{digest::Digest, ed25519, sha2::Sha256};
 use failure::format_err;
 use log::{debug, error, info};
+use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -40,18 +41,23 @@ pub struct Transaction {
 }
 
 impl Transaction {
-    pub fn new_UTXO(wallet: &Wallet, to: &str, amount: i32, bc: &UTXOSet) -> Result<Self> {
+    pub fn new_UTXO(wallet: &Wallet, to: &str, amount: i32, utxo: &UTXOSet) -> Result<Self> {
+        info!(
+            "new UTXO Transaction from: {} to: {}",
+            wallet.get_address(),
+            to
+        );
         let mut vin = Vec::new();
 
         let mut pub_key_hash = wallet.public_key.clone();
         hash_pub_key(&mut pub_key_hash);
 
-        let acc_v = bc.find_spendable_outputs(&pub_key_hash, amount)?;
+        let acc_v = utxo.find_spendable_outputs(&pub_key_hash, amount)?;
 
         if acc_v.0 < amount {
-            error!("Not enough funds");
+            error!("Not Enough balance");
             return Err(format_err!(
-                "Not enough funds: current balance is {}",
+                "Not Enough balance: current balance {}",
                 acc_v.0
             ));
         }
@@ -69,7 +75,6 @@ impl Transaction {
         }
 
         let mut vout = vec![TXOutput::new(amount, to.to_string())?];
-
         if acc_v.0 > amount {
             vout.push(TXOutput::new(acc_v.0 - amount, wallet.get_address())?)
         }
@@ -79,18 +84,22 @@ impl Transaction {
             vin,
             vout,
         };
-
         tx.id = tx.hash()?;
-        bc.blockchain
+        utxo.blockchain
             .sign_transaction(&mut tx, &wallet.secret_key)?;
-
         Ok(tx)
     }
 
-    pub fn new_coinbase(to: String, mut data: String) -> Result<Self> {
-        if data == String::from("") {
-            data += &format!("Reward to {}", to);
+    /// NewCoinbaseTX creates a new coinbase transaction
+    pub fn new_coinbase(to: String, mut data: String) -> Result<Transaction> {
+        info!("new coinbase Transaction to: {}", to);
+        let mut key: [u8; 32] = [0; 32];
+        if data.is_empty() {
+            thread_rng().fill_bytes(&mut key);
+            data = format!("Reward to '{}'", to);
         }
+        let mut pub_key = Vec::from(data.as_bytes());
+        pub_key.append(&mut Vec::from(key));
 
         let mut tx = Transaction {
             id: String::new(),
@@ -98,9 +107,9 @@ impl Transaction {
                 txid: String::new(),
                 vout: -1,
                 signature: Vec::new(),
-                pub_key: Vec::from(data.as_bytes()),
+                pub_key,
             }],
-            vout: vec![TXOutput::new(100, to)?],
+            vout: vec![TXOutput::new(SUBSIDY, to)?],
         };
 
         tx.id = tx.hash()?;
